@@ -1,6 +1,6 @@
 {
   "name": "@tmi.js/chat",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/tmi.node.mjs",
   "browser": "./dist/tmi.browser.min.mjs",
@@ -21,6 +21,9 @@
     "build": "rm -rf dist/* && node scripts/build.js && tsc",
     "tsc-w": "tsc -w"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "twitch",
     "irc",
