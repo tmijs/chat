@@ -865,6 +865,7 @@ export class Client extends EventEmitter<ClientEvents> {
 	}
 	private handle376(ircMessage: IrcMessage) {
 		this.identity.name = ircMessage.params[0];
+		this.emit('connect');
 		this.joinPendingChannels();
 	}
 
