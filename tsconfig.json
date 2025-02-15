@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": [ "DOM", "ES2023" ],
+		"module": "ES2022",
+		"rootDir": "src",
+		"moduleResolution": "Node",
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"sourceMap": true,
+		"outDir": "dist",
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"noImplicitReturns": true,
+		"skipLibCheck": true,
+		"noImplicitAny": true
+	},
+	"include": [
+		"src/**/*"
+	]
+}
