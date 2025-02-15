@@ -950,7 +950,12 @@ export class Client extends EventEmitter<ClientEvents> {
 	}
 	private async joinPendingChannels() {
 		for(const channel of this.channelsPendingJoin) {
-			await this.join(channel);
+			try {
+				await this.join(channel);
+			} catch(err) {
+				const newError = new Error('Failed to join channel', { cause: err });
+				this.emit('error', newError);
+			}
 		}
 	}
 	private waitForCommand<Command extends IrcMessage>(
