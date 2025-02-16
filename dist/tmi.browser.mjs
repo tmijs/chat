@@ -1234,6 +1234,7 @@ var Client = class extends EventEmitter {
   }
   handle376(ircMessage) {
     this.identity.name = ircMessage.params[0];
+    this.emit("connect");
     this.joinPendingChannels();
   }
   isConnected() {
@@ -1316,7 +1317,12 @@ var Client = class extends EventEmitter {
   }
   async joinPendingChannels() {
     for (const channel of this.channelsPendingJoin) {
-      await this.join(channel);
+      try {
+        await this.join(channel);
+      } catch (err) {
+        const newError = new Error("Failed to join channel", { cause: err });
+        this.emit("error", newError);
+      }
     }
   }
   waitForCommand(command, filterCallback, opts) {

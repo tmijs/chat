@@ -3,16 +3,16 @@ var M = Object.defineProperty;
 var v = Object.getOwnPropertyDescriptor;
 var k = Object.getOwnPropertyNames;
 var U = Object.prototype.hasOwnProperty;
-var B = (a, e) => {
+var B = (t, e) => {
   for (var r in e)
-    M(a, r, { get: e[r], enumerable: !0 });
-}, O = (a, e, r, t) => {
+    M(t, r, { get: e[r], enumerable: !0 });
+}, O = (t, e, r, a) => {
   if (e && typeof e == "object" || typeof e == "function")
     for (let s of k(e))
-      !U.call(a, s) && s !== r && M(a, s, { get: () => e[s], enumerable: !(t = v(e, s)) || t.enumerable });
-  return a;
+      !U.call(t, s) && s !== r && M(t, s, { get: () => e[s], enumerable: !(a = v(e, s)) || a.enumerable });
+  return t;
 };
-var A = (a) => O(M({}, "__esModule", { value: !0 }), a);
+var A = (t) => O(M({}, "__esModule", { value: !0 }), t);
 
 // src/index.ts
 var Q = {};
@@ -38,93 +38,93 @@ var L = {
   ";": ":",
   "\\": "\\"
 };
-function G(a) {
-  return !a || !a.includes("\\") ? a : a.replace(/\\[snr:\\]/g, (e) => L[e[1]]);
+function G(t) {
+  return !t || !t.includes("\\") ? t : t.replace(/\\[snr:\\]/g, (e) => L[e[1]]);
 }
-function R(a) {
-  return typeof a == "number" && (a = a.toString()), a.replace(/[\s\n\r;\\]/g, (e) => "\\" + D[e] || e);
+function R(t) {
+  return typeof t == "number" && (t = t.toString()), t.replace(/[\s\n\r;\\]/g, (e) => "\\" + D[e] || e);
 }
-function N(a, e) {
-  if (!a)
+function w(t, e) {
+  if (!t)
     return { raw: "", prefix: {}, command: "", channel: "", params: [], rawTags: {}, tags: {} };
-  let r = 0, t = () => a.indexOf(" ", r), s = (c) => {
+  let r = 0, a = () => t.indexOf(" ", r), s = (c) => {
     if (c === void 0) {
-      if (c = t(), c === -1) {
-        r = a.length;
+      if (c = a(), c === -1) {
+        r = t.length;
         return;
       }
     } else if (c === -1) {
-      r = a.length;
+      r = t.length;
       return;
     }
     r = c + 1;
-  }, n = (c, x = r) => a[x] === c, i = a, m = "";
+  }, n = (c, x = r) => t[x] === c, i = t, m = "";
   if (n("@")) {
-    let c = t();
-    m = a.slice(1, c), s(c);
+    let c = a();
+    m = t.slice(1, c), s(c);
   }
   let l = {};
   if (n(":")) {
-    let c = t(), x = a.slice(r + 1, c);
+    let c = a(), x = t.slice(r + 1, c);
     l = W(x), s(c);
   }
-  let d = t(), o = a.slice(r, d === -1 ? void 0 : d);
+  let d = a(), o = t.slice(r, d === -1 ? void 0 : d);
   s(d);
   let g = "";
   if (n("#")) {
-    let c = t();
-    c === -1 ? (g = a.slice(r), s()) : (g = a.slice(r, c), s(c));
+    let c = a();
+    c === -1 ? (g = t.slice(r), s()) : (g = t.slice(r, c), s(c));
   }
   let p = [];
-  for (; r < a.length; ) {
+  for (; r < t.length; ) {
     if (n(":")) {
-      p.push(a.slice(r + 1));
+      p.push(t.slice(r + 1));
       break;
     }
-    let c = t();
-    p.push(a.slice(r, c)), s(c);
+    let c = a();
+    p.push(t.slice(r, c)), s(c);
   }
   let { rawTags: h, tags: y } = F(m, p, e);
   return { raw: i, rawTags: h, tags: y, prefix: l, command: o, channel: g, params: p };
 }
-function w(a) {
-  let { tags: e, prefix: r, command: t, channel: s, params: n } = a, i = (g, p = " ") => g ? `${p}${g}` : null, m = e ? i(V(e), "@") : null, l = r ? i(H(r), ":") : null, d = s ? $(s) : null, o = n && n.length ? i(n.join(" "), ":") : null;
-  return [m, l, t, d, o].filter(Boolean).join(" ");
+function N(t) {
+  let { tags: e, prefix: r, command: a, channel: s, params: n } = t, i = (g, p = " ") => g ? `${p}${g}` : null, m = e ? i(V(e), "@") : null, l = r ? i(H(r), ":") : null, d = s ? $(s) : null, o = n && n.length ? i(n.join(" "), ":") : null;
+  return [m, l, a, d, o].filter(Boolean).join(" ");
 }
-function _(a, e, r, t) {
-  let s = G(a), n = s, i = G(e), m = i;
-  return t && ([n, m] = t(n, i, r ?? [])), { unescapedKey: s, unescapedValue: i, key: n, value: m };
+function _(t, e, r, a) {
+  let s = G(t), n = s, i = G(e), m = i;
+  return a && ([n, m] = a(n, i, r ?? [])), { unescapedKey: s, unescapedValue: i, key: n, value: m };
 }
-function F(a, e, r) {
-  let t = {}, s = {};
-  return a ? (a.split(";").forEach((n) => {
+function F(t, e, r) {
+  let a = {}, s = {};
+  return t ? (t.split(";").forEach((n) => {
     let [i, m] = n.split("="), { unescapedKey: l, unescapedValue: d, key: o, value: g } = _(i, m, e, r);
-    t[l] = d, s[o] = g;
-  }), { rawTags: t, tags: s }) : { rawTags: t, tags: s };
+    a[l] = d, s[o] = g;
+  }), { rawTags: a, tags: s }) : { rawTags: a, tags: s };
 }
-function W(a) {
+function W(t) {
   let e = {};
-  if (!a)
+  if (!t)
     return e;
-  if (a.includes("!")) {
-    let [r, t] = a.split("!");
-    e.nick = r, [e.user, e.host] = t.includes("@") ? t.split("@") : [t, void 0];
-  } else a.includes("@") ? [e.user, e.host] = a.split("@") : e.host = a;
+  if (t.includes("!")) {
+    let [r, a] = t.split("!");
+    e.nick = r, [e.user, e.host] = a.includes("@") ? a.split("@") : [a, void 0];
+  } else t.includes("@") ? [e.user, e.host] = t.split("@") : e.host = t;
   return e;
 }
-function V(a) {
-  return (Array.isArray(a) ? a : Object.entries(a)).map(
-    ([r, t]) => `${R(r)}=${R(t.toString())}`
+function V(t) {
+  return (Array.isArray(t) ? t : Object.entries(t)).map(
+    ([r, a]) => `${R(r)}=${R(a.toString())}`
   ).join(";");
 }
-function H(a) {
-  if (!a)
+function H(t) {
+  if (!t)
     return "";
-  let { nick: e, user: r, host: t } = a;
-  return e ? `${e}${r ? `!${r}` : ""}${t ? `@${t}` : ""}` : "";
+  let { nick: e, user: r, host: a } = t;
+  return e ? `${e}${r ? `!${r}` : ""}${a ? `@${a}` : ""}` : "";
 }
-function $(a) {
-  return a ? `${a.startsWith("#") ? a : `#${a}`}` : "";
+function $(t) {
+  return t ? `${t.startsWith("#") ? t : `#${t}`}` : "";
 }
 
 // src/lib/EventEmitter.ts
@@ -142,8 +142,8 @@ var f = class {
         throw r[0] instanceof Error ? r[0] : new Error("Uncaught error emitted", { cause: r[0] });
       return !1;
     }
-    for (let t of this.listeners.get(e))
-      t(...r);
+    for (let a of this.listeners.get(e))
+      a(...r);
     return !0;
   }
 };
@@ -157,11 +157,11 @@ var I = class extends Map {
 
 // src/irc.ts
 var K = /-(\w)/g;
-function j(a) {
-  return a.replace(K, (e, r) => r.toUpperCase());
+function j(t) {
+  return t.replace(K, (e, r) => r.toUpperCase());
 }
-function T(a, e, r) {
-  switch (a = j(a), a) {
+function T(t, e, r) {
+  switch (t = j(t), t) {
     // Integer
     case "banDuration":
     case "bits":
@@ -186,12 +186,12 @@ function T(a, e, r) {
     case "sentTs":
     case "slow":
     case "tmiSentTs":
-      return [a, parseInt(e, 10)];
+      return [t, parseInt(e, 10)];
     // Literal boolean
     case "msgParamAnonGift":
     case "msgParamPriorGifterAnonymous":
     case "msgParamWasGifted":
-      return [a, e === "true"];
+      return [t, e === "true"];
     // Boolean number
     case "emoteOnly":
     // Occurs in ROOMSTATE and PRIVMSG
@@ -203,51 +203,51 @@ function T(a, e, r) {
     case "subscriber":
     case "turbo":
     case "vip":
-      return [a, e === "1"];
+      return [t, e === "1"];
     case "r9k":
       return ["unique", e === "1"];
     // Followers only
     case "followersOnly":
-      return [a, { enabled: e !== "-1", durationMinutes: parseInt(e, 10) }];
+      return [t, { enabled: e !== "-1", durationMinutes: parseInt(e, 10) }];
     // Badges
     case "badgeInfo":
     case "badges":
     case "sourceBadgeInfo":
     case "sourceBadges":
-      return e ? [a, e.split(",").reduce((t, s) => {
+      return e ? [t, e.split(",").reduce((a, s) => {
         let [n, i] = s.split("/");
-        return t.set(n, i), t;
-      }, new I())] : [a, new I()];
+        return a.set(n, i), a;
+      }, new I())] : [t, new I()];
     // Emotes
     case "emotes":
-      return e ? [a, e.split("/").map((t) => {
-        let [s, n] = t.split(":"), i = n.split(",").map((m) => {
+      return e ? [t, e.split("/").map((a) => {
+        let [s, n] = a.split(":"), i = n.split(",").map((m) => {
           let [l, d] = m.split("-");
           return [Number(l), Number(d) + 1];
         });
         return { id: s, indices: i };
-      })] : [a, []];
+      })] : [t, []];
     // Comma-separated lists
     case "emoteSets":
-      return [a, e.split(",")];
+      return [t, e.split(",")];
     // Thread ID
     case "threadId":
-      return [a, e.split("_")];
+      return [t, e.split("_")];
     // Flags
     case "flags": {
-      let t = [];
+      let a = [];
       if (!e)
-        return [a, t];
+        return [t, a];
       let s = [...r[0]];
       for (let n of e.split(",")) {
         let [i, m] = n.split(":"), [l, d] = i.split("-"), o = [Number(l), Number(d) + 1], g = m.split("/");
-        t.push({
+        a.push({
           index: o,
           flags: g.reduce((p, [h, , y]) => (p[h] = Number(y), p), {}),
           text: s.slice(...o).join("")
         });
       }
-      return [a, t];
+      return [t, a];
     }
     // Strings
     case "animationId":
@@ -304,11 +304,11 @@ function T(a, e, r) {
     case "targetUserId":
     case "userId":
     case "userType":
-      return [a, e];
+      return [t, e];
     case "msgParamProfileImageURL":
       return ["msgParamProfileImageUrl", e];
   }
-  return [a, e];
+  return [t, e];
 }
 
 // src/lib/Identity.ts
@@ -330,13 +330,13 @@ var b = class {
     throw new Error("Invalid token");
   }
   [Symbol.for("nodejs.util.inspect.custom")]() {
-    let e = this.name ? `"${this.name}"` : "undefined", r = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined", t = this.token ? typeof this.token == "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
-    return `Identity { name: ${e}, id: ${r}, token: ${t} }`;
+    let e = this.name ? `"${this.name}"` : "undefined", r = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined", a = this.token ? typeof this.token == "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
+    return `Identity { name: ${e}, id: ${r}, token: ${a} }`;
   }
 };
 
 // src/lib/Channel.ts
-var u = class a {
+var u = class t {
   constructor(e, r) {
     this._id = e;
     this._login = r;
@@ -347,7 +347,7 @@ var u = class a {
     return r.startsWith("#") ? r.slice(1) : r;
   }
   static toIrc(e) {
-    return e instanceof a ? `#${e.login}` : `#${a.toLogin(e)}`;
+    return e instanceof t ? `#${e.login}` : `#${t.toLogin(e)}`;
   }
   lastUserstate = null;
   set id(e) {
@@ -361,13 +361,13 @@ var u = class a {
   set login(e) {
     if (typeof e != "string")
       throw new TypeError("Channel#login must be a string");
-    this._login = a.toLogin(e);
+    this._login = t.toLogin(e);
   }
   get login() {
     return this._login;
   }
   toString() {
-    return a.toIrc(this._login);
+    return t.toIrc(this._login);
   }
 }, S = class extends u {
   constructor(e, r) {
@@ -383,20 +383,20 @@ var u = class a {
 
 // src/Client.ts
 var q = "ACTION ", z = "", X = "ananonymousgifter";
-function E(a) {
+function E(t) {
   return {
-    id: a.userId,
+    id: t.userId,
     // login: tags.login ?? prefix.nick,
-    display: a.displayName,
-    color: a.color,
-    badges: a.badges,
-    badgeInfo: a.badgeInfo,
-    isBroadcaster: a.badges.has("broadcaster"),
-    isMod: a.mod,
-    isSubscriber: a.subscriber,
-    isFounder: a.badges.has("founder"),
-    isVip: "vip" in a && a.vip === !0,
-    type: a.userType
+    display: t.displayName,
+    color: t.color,
+    badges: t.badges,
+    badgeInfo: t.badgeInfo,
+    isBroadcaster: t.badges.has("broadcaster"),
+    isMod: t.mod,
+    isSubscriber: t.subscriber,
+    isFounder: t.badges.has("founder"),
+    isVip: "vip" in t && t.vip === !0,
+    type: t.userType
     // isTurbo: 'turbo' in tags && tags.turbo === true,
     // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
   };
@@ -416,7 +416,7 @@ var P = class extends f {
   identity = new b();
   wasCloseCalled = !1;
   constructor(e) {
-    super(), this.channelsPendingJoin = (e?.channels ?? []).reduce((r, t) => (r.add(u.toLogin(t)), r), /* @__PURE__ */ new Set()), e?.token && this.identity.setToken(e.token);
+    super(), this.channelsPendingJoin = (e?.channels ?? []).reduce((r, a) => (r.add(u.toLogin(a)), r), /* @__PURE__ */ new Set()), e?.token && this.identity.setToken(e.token);
   }
   connect() {
     if (this.isConnected())
@@ -449,8 +449,8 @@ var P = class extends f {
   }
   async onSocketOpen(e) {
     this.keepalive.reconnectAttempts = 0;
-    let r = this.identity.isAnonymous(), t = r ? "schmoopiie" : `oauth:${await this.identity.getToken()}`;
-    this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [t] }), this.sendIrc({ command: "NICK", params: [r ? "justinfan123456" : "justinfan"] });
+    let r = this.identity.isAnonymous(), a = r ? "schmoopiie" : `oauth:${await this.identity.getToken()}`;
+    this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [a] }), this.sendIrc({ command: "NICK", params: [r ? "justinfan123456" : "justinfan"] });
   }
   onSocketError(e) {
     this.emit("socketError", e);
@@ -465,7 +465,7 @@ var P = class extends f {
     return new S(e, r);
   }
   onIrcLine(e) {
-    let r = N(e, T);
+    let r = w(e, T);
     r && this.onIrcMessage(r);
   }
   onIrcMessage(e) {
@@ -523,8 +523,8 @@ var P = class extends f {
       throw new Error("Received PONG without having sent a PING");
     this.keepalive.latencyMs = this.keepalive.lastPongReceivedAt - this.keepalive.lastPingSent, this.emit("pong");
   }
-  handlePRIVMSG({ tags: e, prefix: r, channel: t, params: s }) {
-    let n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, t), i = s[0], m = i.startsWith(q) && i.endsWith(z);
+  handlePRIVMSG({ tags: e, prefix: r, channel: a, params: s }) {
+    let n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, a), i = s[0], m = i.startsWith(q) && i.endsWith(z);
     m && (i = i.slice(8, -1));
     let l, d, o, g;
     if ("sourceRoomId" in e && (l = {
@@ -623,7 +623,7 @@ var P = class extends f {
     });
   }
   handleUSERSTATE({ tags: e, channel: r }) {
-    let t = this.getChannelByLogin(r) ?? this.getChannelPlaceholder(void 0, r), s = {
+    let a = this.getChannelByLogin(r) ?? this.getChannelPlaceholder(void 0, r), s = {
       id: this.identity.id,
       color: e.color,
       login: this.identity.name,
@@ -639,7 +639,7 @@ var P = class extends f {
       type: e.userType
     };
     this.emit("userState", {
-      channel: t,
+      channel: a,
       user: s
     });
   }
@@ -658,8 +658,8 @@ var P = class extends f {
       tags: e
     });
   }
-  handleUSERNOTICE({ tags: e, channel: r, params: t }) {
-    let s = t[0], n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, r), i = {
+  handleUSERNOTICE({ tags: e, channel: r, params: a }) {
+    let s = a[0], n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, r), i = {
       ...E(e),
       login: e.login,
       isTurbo: "turbo" in e && e.turbo === !0,
@@ -921,10 +921,10 @@ var P = class extends f {
       }
     }
   }
-  handleNOTICE({ channel: e, tags: r, params: t }) {
+  handleNOTICE({ channel: e, tags: r, params: a }) {
     let { msgId: s } = r;
     if (!s) {
-      let i = t[1];
+      let i = a[1];
       switch (this.close(), i) {
         case "Login authentication failed":
           break;
@@ -960,7 +960,7 @@ var P = class extends f {
         break;
     }
   }
-  handleCLEARCHAT({ channel: e, tags: r, params: t }) {
+  handleCLEARCHAT({ channel: e, tags: r, params: a }) {
     let s = this.getChannelById(r.roomId) ?? this.getChannelPlaceholder(r.roomId, e), n = r.tmiSentTs;
     "banDuration" in r ? this.emit("moderation", {
       type: "timeout",
@@ -968,7 +968,7 @@ var P = class extends f {
       duration: r.banDuration,
       user: {
         id: r.targetUserId,
-        login: t[0]
+        login: a[0]
       },
       timestamp: n,
       tags: r
@@ -977,7 +977,7 @@ var P = class extends f {
       channel: s,
       user: {
         id: r.targetUserId,
-        login: t[0]
+        login: a[0]
       },
       timestamp: n,
       tags: r
@@ -988,26 +988,26 @@ var P = class extends f {
       tags: r
     });
   }
-  handleCLEARMSG({ tags: e, channel: r, params: t }) {
+  handleCLEARMSG({ tags: e, channel: r, params: a }) {
     let s = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, r);
     this.emit("moderation", {
       type: "deleteMessage",
       channel: s,
       user: {
-        login: t[0]
+        login: a[0]
       },
       message: {
         id: e.targetMsgId,
-        text: t[0]
+        text: a[0]
       },
       timestamp: e.tmiSentTs,
       tags: e
     });
   }
   handleROOMSTATE({ tags: e, channel: r }) {
-    let t = this.getChannelById(e.roomId);
-    t || (t = new u(e.roomId, r), this.channels.add(t), this.channelsById.set(e.roomId, t), this.channelsByLogin.set(r, t)), this.emit("roomState", {
-      channel: t,
+    let a = this.getChannelById(e.roomId);
+    a || (a = new u(e.roomId, r), this.channels.add(a), this.channelsById.set(e.roomId, a), this.channelsByLogin.set(r, a)), this.emit("roomState", {
+      channel: a,
       emoteOnly: e.emoteOnly,
       followersOnly: e.followersOnly,
       unique: e.unique,
@@ -1024,8 +1024,8 @@ var P = class extends f {
       channel: r
     });
   }
-  handleWHISPER({ tags: e, prefix: r, params: t }) {
-    let s = t[1], n = s.startsWith("/me ");
+  handleWHISPER({ tags: e, prefix: r, params: a }) {
+    let s = a[1], n = s.startsWith("/me ");
     n && (s = s.slice(4)), this.emit("whisper", {
       user: {
         id: e.userId,
@@ -1051,7 +1051,7 @@ var P = class extends f {
     this.reconnect();
   }
   handle376(e) {
-    this.identity.name = e.params[0], this.joinPendingChannels();
+    this.identity.name = e.params[0], this.emit("connect"), this.joinPendingChannels();
   }
   isConnected() {
     return !!this.socket && this.socket.readyState === WebSocket.OPEN;
@@ -1062,7 +1062,7 @@ var P = class extends f {
     this.socket.send(e);
   }
   sendIrc(e) {
-    let r = w({
+    let r = N({
       ...e,
       channel: e.channel?.toString()
     });
@@ -1071,29 +1071,29 @@ var P = class extends f {
     this.send(r);
   }
   async join(e) {
-    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), t = this.waitForCommand(
+    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), a = this.waitForCommand(
       this.identity.isAnonymous() ? "JOIN" : "USERSTATE",
       (s) => s.channel === r && (s.prefix.nick ? s.prefix.nick === this.identity.name : !0),
       { channelHint: u.toIrc(e) }
     );
-    this.sendIrc({ command: "JOIN", channel: r }), await t;
+    this.sendIrc({ command: "JOIN", channel: r }), await a;
   }
   async part(e) {
-    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), t = this.waitForCommand(
+    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), a = this.waitForCommand(
       "PART",
       (s) => s.channel === r && s.prefix.nick === this.identity.name,
       { channelHint: u.toIrc(e) }
     );
-    this.sendIrc({ command: "PART", channel: r }), await t;
+    this.sendIrc({ command: "PART", channel: r }), await a;
   }
-  async say(e, r, t = {}) {
+  async say(e, r, a = {}) {
     if (r.length === 0)
       throw new Error("Message cannot be empty");
     if (r.length > 500)
       throw new Error("Message is too long (max 500 characters)");
     let s = {
       "client-nonce": this.generateClientNonce(),
-      ...t
+      ...a
     }, n = s["client-nonce"], i = this.waitForCommand(
       "USERSTATE",
       (m) => m.tags.clientNonce === n,
@@ -1106,9 +1106,9 @@ var P = class extends f {
       tags: s
     }), await i;
   }
-  async reply(e, r, t, s = {}) {
+  async reply(e, r, a, s = {}) {
     return this.say(e, r, {
-      "reply-parent-msg-id": t,
+      "reply-parent-msg-id": a,
       ...s
     });
   }
@@ -1120,14 +1120,19 @@ var P = class extends f {
   }
   async joinPendingChannels() {
     for (let e of this.channelsPendingJoin)
-      await this.join(e);
+      try {
+        await this.join(e);
+      } catch (r) {
+        let a = new Error("Failed to join channel", { cause: r });
+        this.emit("error", a);
+      }
   }
-  waitForCommand(e, r, t) {
+  waitForCommand(e, r, a) {
     return new Promise((s, n) => {
-      let i = t?.failOnDrop ?? !0, m = t?.timeoutMs ?? Math.max(1e3, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2)), l = (p) => {
+      let i = a?.failOnDrop ?? !0, m = a?.timeoutMs ?? Math.max(1e3, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2)), l = (p) => {
         p.command === e && (!r || r(p)) && (o(), clearTimeout(g), s(p));
       }, d = (p) => {
-        t?.channelHint && p.channel.toString() !== t?.channelHint || (o(), n(new Error(`Message dropped: ${p.reason}`, { cause: p })));
+        a?.channelHint && p.channel.toString() !== a?.channelHint || (o(), n(new Error(`Message dropped: ${p.reason}`, { cause: p })));
       }, o = () => {
         this.off("ircMessage", l), i && this.off("messageDropped", d);
       }, g = setTimeout(() => {
