@@ -1,6 +1,6 @@
 {
   "name": "@tmi.js/chat",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "./dist/tmi.node.mjs",
   "browser": "./dist/tmi.browser.min.mjs",
