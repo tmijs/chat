@@ -1,106 +1,5 @@
-// node_modules/@tmi.js/irc-parser/dist/index.mjs
-var ircEscapedChars = {
-  s: " ",
-  n: `
-`,
-  r: "\r",
-  ":": ";",
-  "\\": "\\"
-}, ircUnescapedChars = {
-  " ": "s",
-  "\n": "n",
-  "\r": "r",
-  ";": ":",
-  "\\": "\\"
-};
-function unescapeIrc(value) {
-  return !value || !value.includes("\\") ? value : value.replace(/\\[snr:\\]/g, (match) => ircEscapedChars[match[1]]);
-}
-function escapeIrc(value) {
-  return typeof value == "number" && (value = value.toString()), value.replace(/[\s\n\r;\\]/g, (match) => "\\" + ircUnescapedChars[match] || match);
-}
-function parse(line, parseTagCb) {
-  if (!line)
-    return { raw: "", prefix: {}, command: "", channel: "", params: [], rawTags: {}, tags: {} };
-  let offset = 0, getNextSpace = () => line.indexOf(" ", offset), advanceToNextSpace = (start) => {
-    if (start === void 0) {
-      if (start = getNextSpace(), start === -1) {
-        offset = line.length;
-        return;
-      }
-    } else if (start === -1) {
-      offset = line.length;
-      return;
-    }
-    offset = start + 1;
-  }, charIs = (char, start = offset) => line[start] === char, raw = line, tagsRawString = "";
-  if (charIs("@")) {
-    let tagsEnd = getNextSpace();
-    tagsRawString = line.slice(1, tagsEnd), advanceToNextSpace(tagsEnd);
-  }
-  let prefix = {};
-  if (charIs(":")) {
-    let prefixEnd = getNextSpace(), prefixRaw = line.slice(offset + 1, prefixEnd);
-    prefix = parsePrefix(prefixRaw), advanceToNextSpace(prefixEnd);
-  }
-  let commandEnd = getNextSpace(), command = line.slice(offset, commandEnd === -1 ? void 0 : commandEnd);
-  advanceToNextSpace(commandEnd);
-  let channel = "";
-  if (charIs("#")) {
-    let channelEnd = getNextSpace();
-    channelEnd === -1 ? (channel = line.slice(offset), advanceToNextSpace()) : (channel = line.slice(offset, channelEnd), advanceToNextSpace(channelEnd));
-  }
-  let params = [];
-  for (; offset < line.length; ) {
-    if (charIs(":")) {
-      params.push(line.slice(offset + 1));
-      break;
-    }
-    let nextSpace = getNextSpace();
-    params.push(line.slice(offset, nextSpace)), advanceToNextSpace(nextSpace);
-  }
-  let { rawTags, tags } = parseTagsFromString(tagsRawString, params, parseTagCb);
-  return { raw, rawTags, tags, prefix, command, channel, params };
-}
-function format(ircMessage) {
-  let { tags, prefix: p, command, channel, params } = ircMessage, prefixWith = (n, c = " ") => n ? `${c}${n}` : null, tagsStr = tags ? prefixWith(formatTags(tags), "@") : null, prefixStr = p ? prefixWith(formatPrefix(p), ":") : null, channelStr = channel ? formatChannel(channel) : null, paramsStr = params && params.length ? prefixWith(params.join(" "), ":") : null;
-  return [tagsStr, prefixStr, command, channelStr, paramsStr].filter(Boolean).join(" ");
-}
-function parseTag(rawKey, rawValue, messageParams, cb) {
-  let unescapedKey = unescapeIrc(rawKey), key = unescapedKey, unescapedValue = unescapeIrc(rawValue), value = unescapedValue;
-  return cb && ([key, value] = cb(key, unescapedValue, messageParams ?? [])), { unescapedKey, unescapedValue, key, value };
-}
-function parseTagsFromString(tagsRawString, messageParams, cb) {
-  let rawTags = {}, tags = {};
-  return tagsRawString ? (tagsRawString.split(";").forEach((str) => {
-    let [rawKey, rawValue] = str.split("="), { unescapedKey, unescapedValue, key, value } = parseTag(rawKey, rawValue, messageParams, cb);
-    rawTags[unescapedKey] = unescapedValue, tags[key] = value;
-  }), { rawTags, tags }) : { rawTags, tags };
-}
-function parsePrefix(prefixRaw) {
-  let prefix = {};
-  if (!prefixRaw)
-    return prefix;
-  if (prefixRaw.includes("!")) {
-    let [nick, userHost] = prefixRaw.split("!");
-    prefix.nick = nick, [prefix.user, prefix.host] = userHost.includes("@") ? userHost.split("@") : [userHost, void 0];
-  } else prefixRaw.includes("@") ? [prefix.user, prefix.host] = prefixRaw.split("@") : prefix.host = prefixRaw;
-  return prefix;
-}
-function formatTags(tags) {
-  return (Array.isArray(tags) ? tags : Object.entries(tags)).map(
-    ([key, value]) => `${escapeIrc(key)}=${escapeIrc(value.toString())}`
-  ).join(";");
-}
-function formatPrefix(prefix) {
-  if (!prefix)
-    return "";
-  let { nick, user, host } = prefix;
-  return nick ? `${nick}${user ? `!${user}` : ""}${host ? `@${host}` : ""}` : "";
-}
-function formatChannel(channel) {
-  return channel ? `${channel.startsWith("#") ? channel : `#${channel}`}` : "";
-}
+// src/Client.ts
+import { format, parse } from "@tmi.js/irc-parser";
 
 // src/lib/EventEmitter.ts
 var EventEmitter = class {
@@ -135,7 +34,7 @@ var regexKebabToCamel = /-(\w)/g;
 function kebabToCamel(str) {
   return str.replace(regexKebabToCamel, (_, match) => match.toUpperCase());
 }
-function parseTag2(key, value, params) {
+function parseTag(key, value, params) {
   switch (key = kebabToCamel(key), key) {
     // Integer
     case "banDuration":
@@ -440,7 +339,7 @@ var Client = class extends EventEmitter {
     return new ChannelPlaceholder(id, login);
   }
   onIrcLine(line) {
-    let ircMessage = parse(line, parseTag2);
+    let ircMessage = parse(line, parseTag);
     ircMessage && this.onIrcMessage(ircMessage);
   }
   onIrcMessage(ircMessage) {
@@ -1126,11 +1025,11 @@ var Client = class extends EventEmitter {
 // src/index.ts
 var src_default = {
   Client,
-  parseTag: parseTag2
+  parseTag
 };
 export {
   Client,
   src_default as default,
-  parseTag2 as parseTag
+  parseTag
 };
 //# sourceMappingURL=tmi.node.mjs.map

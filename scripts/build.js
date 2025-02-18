@@ -24,6 +24,7 @@ const opts = {
 const node = {
 	platform: 'node',
 	minifySyntax: true,
+	packages: 'external',
 };
 
 /** @type {BuildOptions} */
