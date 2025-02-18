@@ -1,167 +1,167 @@
 "use strict";
-var M = Object.defineProperty;
-var v = Object.getOwnPropertyDescriptor;
-var k = Object.getOwnPropertyNames;
-var U = Object.prototype.hasOwnProperty;
-var B = (t, e) => {
-  for (var r in e)
-    M(t, r, { get: e[r], enumerable: !0 });
-}, O = (t, e, r, a) => {
-  if (e && typeof e == "object" || typeof e == "function")
-    for (let s of k(e))
-      !U.call(t, s) && s !== r && M(t, s, { get: () => e[s], enumerable: !(a = v(e, s)) || a.enumerable });
-  return t;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: !0 });
+}, __copyProps = (to, from, except, desc) => {
+  if (from && typeof from == "object" || typeof from == "function")
+    for (let key of __getOwnPropNames(from))
+      !__hasOwnProp.call(to, key) && key !== except && __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  return to;
 };
-var A = (t) => O(M({}, "__esModule", { value: !0 }), t);
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: !0 }), mod);
 
 // src/index.ts
-var Q = {};
-B(Q, {
-  Client: () => P,
-  default: () => Y,
-  parseTag: () => T
+var src_exports = {};
+__export(src_exports, {
+  Client: () => Client,
+  default: () => src_default,
+  parseTag: () => parseTag2
 });
-module.exports = A(Q);
+module.exports = __toCommonJS(src_exports);
 
 // node_modules/@tmi.js/irc-parser/dist/index.mjs
-var L = {
+var ircEscapedChars = {
   s: " ",
   n: `
 `,
   r: "\r",
   ":": ";",
   "\\": "\\"
-}, D = {
+}, ircUnescapedChars = {
   " ": "s",
   "\n": "n",
   "\r": "r",
   ";": ":",
   "\\": "\\"
 };
-function G(t) {
-  return !t || !t.includes("\\") ? t : t.replace(/\\[snr:\\]/g, (e) => L[e[1]]);
+function unescapeIrc(value) {
+  return !value || !value.includes("\\") ? value : value.replace(/\\[snr:\\]/g, (match) => ircEscapedChars[match[1]]);
 }
-function R(t) {
-  return typeof t == "number" && (t = t.toString()), t.replace(/[\s\n\r;\\]/g, (e) => "\\" + D[e] || e);
+function escapeIrc(value) {
+  return typeof value == "number" && (value = value.toString()), value.replace(/[\s\n\r;\\]/g, (match) => "\\" + ircUnescapedChars[match] || match);
 }
-function w(t, e) {
-  if (!t)
+function parse(line, parseTagCb) {
+  if (!line)
     return { raw: "", prefix: {}, command: "", channel: "", params: [], rawTags: {}, tags: {} };
-  let r = 0, a = () => t.indexOf(" ", r), s = (c) => {
-    if (c === void 0) {
-      if (c = a(), c === -1) {
-        r = t.length;
+  let offset = 0, getNextSpace = () => line.indexOf(" ", offset), advanceToNextSpace = (start) => {
+    if (start === void 0) {
+      if (start = getNextSpace(), start === -1) {
+        offset = line.length;
         return;
       }
-    } else if (c === -1) {
-      r = t.length;
+    } else if (start === -1) {
+      offset = line.length;
       return;
     }
-    r = c + 1;
-  }, n = (c, x = r) => t[x] === c, i = t, m = "";
-  if (n("@")) {
-    let c = a();
-    m = t.slice(1, c), s(c);
+    offset = start + 1;
+  }, charIs = (char, start = offset) => line[start] === char, raw = line, tagsRawString = "";
+  if (charIs("@")) {
+    let tagsEnd = getNextSpace();
+    tagsRawString = line.slice(1, tagsEnd), advanceToNextSpace(tagsEnd);
   }
-  let l = {};
-  if (n(":")) {
-    let c = a(), x = t.slice(r + 1, c);
-    l = W(x), s(c);
+  let prefix = {};
+  if (charIs(":")) {
+    let prefixEnd = getNextSpace(), prefixRaw = line.slice(offset + 1, prefixEnd);
+    prefix = parsePrefix(prefixRaw), advanceToNextSpace(prefixEnd);
   }
-  let d = a(), o = t.slice(r, d === -1 ? void 0 : d);
-  s(d);
-  let g = "";
-  if (n("#")) {
-    let c = a();
-    c === -1 ? (g = t.slice(r), s()) : (g = t.slice(r, c), s(c));
+  let commandEnd = getNextSpace(), command = line.slice(offset, commandEnd === -1 ? void 0 : commandEnd);
+  advanceToNextSpace(commandEnd);
+  let channel = "";
+  if (charIs("#")) {
+    let channelEnd = getNextSpace();
+    channelEnd === -1 ? (channel = line.slice(offset), advanceToNextSpace()) : (channel = line.slice(offset, channelEnd), advanceToNextSpace(channelEnd));
   }
-  let p = [];
-  for (; r < t.length; ) {
-    if (n(":")) {
-      p.push(t.slice(r + 1));
+  let params = [];
+  for (; offset < line.length; ) {
+    if (charIs(":")) {
+      params.push(line.slice(offset + 1));
       break;
     }
-    let c = a();
-    p.push(t.slice(r, c)), s(c);
+    let nextSpace = getNextSpace();
+    params.push(line.slice(offset, nextSpace)), advanceToNextSpace(nextSpace);
   }
-  let { rawTags: h, tags: y } = F(m, p, e);
-  return { raw: i, rawTags: h, tags: y, prefix: l, command: o, channel: g, params: p };
+  let { rawTags, tags } = parseTagsFromString(tagsRawString, params, parseTagCb);
+  return { raw, rawTags, tags, prefix, command, channel, params };
 }
-function N(t) {
-  let { tags: e, prefix: r, command: a, channel: s, params: n } = t, i = (g, p = " ") => g ? `${p}${g}` : null, m = e ? i(V(e), "@") : null, l = r ? i(H(r), ":") : null, d = s ? $(s) : null, o = n && n.length ? i(n.join(" "), ":") : null;
-  return [m, l, a, d, o].filter(Boolean).join(" ");
+function format(ircMessage) {
+  let { tags, prefix: p, command, channel, params } = ircMessage, prefixWith = (n, c = " ") => n ? `${c}${n}` : null, tagsStr = tags ? prefixWith(formatTags(tags), "@") : null, prefixStr = p ? prefixWith(formatPrefix(p), ":") : null, channelStr = channel ? formatChannel(channel) : null, paramsStr = params && params.length ? prefixWith(params.join(" "), ":") : null;
+  return [tagsStr, prefixStr, command, channelStr, paramsStr].filter(Boolean).join(" ");
 }
-function _(t, e, r, a) {
-  let s = G(t), n = s, i = G(e), m = i;
-  return a && ([n, m] = a(n, i, r ?? [])), { unescapedKey: s, unescapedValue: i, key: n, value: m };
+function parseTag(rawKey, rawValue, messageParams, cb) {
+  let unescapedKey = unescapeIrc(rawKey), key = unescapedKey, unescapedValue = unescapeIrc(rawValue), value = unescapedValue;
+  return cb && ([key, value] = cb(key, unescapedValue, messageParams ?? [])), { unescapedKey, unescapedValue, key, value };
 }
-function F(t, e, r) {
-  let a = {}, s = {};
-  return t ? (t.split(";").forEach((n) => {
-    let [i, m] = n.split("="), { unescapedKey: l, unescapedValue: d, key: o, value: g } = _(i, m, e, r);
-    a[l] = d, s[o] = g;
-  }), { rawTags: a, tags: s }) : { rawTags: a, tags: s };
+function parseTagsFromString(tagsRawString, messageParams, cb) {
+  let rawTags = {}, tags = {};
+  return tagsRawString ? (tagsRawString.split(";").forEach((str) => {
+    let [rawKey, rawValue] = str.split("="), { unescapedKey, unescapedValue, key, value } = parseTag(rawKey, rawValue, messageParams, cb);
+    rawTags[unescapedKey] = unescapedValue, tags[key] = value;
+  }), { rawTags, tags }) : { rawTags, tags };
 }
-function W(t) {
-  let e = {};
-  if (!t)
-    return e;
-  if (t.includes("!")) {
-    let [r, a] = t.split("!");
-    e.nick = r, [e.user, e.host] = a.includes("@") ? a.split("@") : [a, void 0];
-  } else t.includes("@") ? [e.user, e.host] = t.split("@") : e.host = t;
-  return e;
+function parsePrefix(prefixRaw) {
+  let prefix = {};
+  if (!prefixRaw)
+    return prefix;
+  if (prefixRaw.includes("!")) {
+    let [nick, userHost] = prefixRaw.split("!");
+    prefix.nick = nick, [prefix.user, prefix.host] = userHost.includes("@") ? userHost.split("@") : [userHost, void 0];
+  } else prefixRaw.includes("@") ? [prefix.user, prefix.host] = prefixRaw.split("@") : prefix.host = prefixRaw;
+  return prefix;
 }
-function V(t) {
-  return (Array.isArray(t) ? t : Object.entries(t)).map(
-    ([r, a]) => `${R(r)}=${R(a.toString())}`
+function formatTags(tags) {
+  return (Array.isArray(tags) ? tags : Object.entries(tags)).map(
+    ([key, value]) => `${escapeIrc(key)}=${escapeIrc(value.toString())}`
   ).join(";");
 }
-function H(t) {
-  if (!t)
+function formatPrefix(prefix) {
+  if (!prefix)
     return "";
-  let { nick: e, user: r, host: a } = t;
-  return e ? `${e}${r ? `!${r}` : ""}${a ? `@${a}` : ""}` : "";
+  let { nick, user, host } = prefix;
+  return nick ? `${nick}${user ? `!${user}` : ""}${host ? `@${host}` : ""}` : "";
 }
-function $(t) {
-  return t ? `${t.startsWith("#") ? t : `#${t}`}` : "";
+function formatChannel(channel) {
+  return channel ? `${channel.startsWith("#") ? channel : `#${channel}`}` : "";
 }
 
 // src/lib/EventEmitter.ts
-var f = class {
+var EventEmitter = class {
   listeners = /* @__PURE__ */ new Map();
-  on(e, r) {
-    return this.listeners.has(e) || this.listeners.set(e, /* @__PURE__ */ new Set()), this.listeners.get(e).add(r), this;
+  on(event, listener) {
+    return this.listeners.has(event) || this.listeners.set(event, /* @__PURE__ */ new Set()), this.listeners.get(event).add(listener), this;
   }
-  off(e, r) {
-    return this.listeners.get(e)?.delete(r), this;
+  off(event, listener) {
+    return this.listeners.get(event)?.delete(listener), this;
   }
-  emit(e, ...r) {
-    if (!this.listeners.has(e)) {
-      if (e === "error")
-        throw r[0] instanceof Error ? r[0] : new Error("Uncaught error emitted", { cause: r[0] });
+  emit(event, ...args) {
+    if (!this.listeners.has(event)) {
+      if (event === "error")
+        throw args[0] instanceof Error ? args[0] : new Error("Uncaught error emitted", { cause: args[0] });
       return !1;
     }
-    for (let a of this.listeners.get(e))
-      a(...r);
+    for (let listener of this.listeners.get(event))
+      listener(...args);
     return !0;
   }
 };
 
 // src/lib/Collection.ts
-var I = class extends Map {
+var Collection = class extends Map {
   toJSON() {
     return [...this.entries()];
   }
 };
 
 // src/irc.ts
-var K = /-(\w)/g;
-function j(t) {
-  return t.replace(K, (e, r) => r.toUpperCase());
+var regexKebabToCamel = /-(\w)/g;
+function kebabToCamel(str) {
+  return str.replace(regexKebabToCamel, (_, match) => match.toUpperCase());
 }
-function T(t, e, r) {
-  switch (t = j(t), t) {
+function parseTag2(key, value, params) {
+  switch (key = kebabToCamel(key), key) {
     // Integer
     case "banDuration":
     case "bits":
@@ -186,12 +186,12 @@ function T(t, e, r) {
     case "sentTs":
     case "slow":
     case "tmiSentTs":
-      return [t, parseInt(e, 10)];
+      return [key, parseInt(value, 10)];
     // Literal boolean
     case "msgParamAnonGift":
     case "msgParamPriorGifterAnonymous":
     case "msgParamWasGifted":
-      return [t, e === "true"];
+      return [key, value === "true"];
     // Boolean number
     case "emoteOnly":
     // Occurs in ROOMSTATE and PRIVMSG
@@ -203,51 +203,51 @@ function T(t, e, r) {
     case "subscriber":
     case "turbo":
     case "vip":
-      return [t, e === "1"];
+      return [key, value === "1"];
     case "r9k":
-      return ["unique", e === "1"];
+      return ["unique", value === "1"];
     // Followers only
     case "followersOnly":
-      return [t, { enabled: e !== "-1", durationMinutes: parseInt(e, 10) }];
+      return [key, { enabled: value !== "-1", durationMinutes: parseInt(value, 10) }];
     // Badges
     case "badgeInfo":
     case "badges":
     case "sourceBadgeInfo":
     case "sourceBadges":
-      return e ? [t, e.split(",").reduce((a, s) => {
-        let [n, i] = s.split("/");
-        return a.set(n, i), a;
-      }, new I())] : [t, new I()];
+      return value ? [key, value.split(",").reduce((p, badge) => {
+        let [badgeKey, version] = badge.split("/");
+        return p.set(badgeKey, version), p;
+      }, new Collection())] : [key, new Collection()];
     // Emotes
     case "emotes":
-      return e ? [t, e.split("/").map((a) => {
-        let [s, n] = a.split(":"), i = n.split(",").map((m) => {
-          let [l, d] = m.split("-");
-          return [Number(l), Number(d) + 1];
+      return value ? [key, value.split("/").map((emote) => {
+        let [id, raw] = emote.split(":"), indices = raw.split(",").map((pos) => {
+          let [start, end] = pos.split("-");
+          return [Number(start), Number(end) + 1];
         });
-        return { id: s, indices: i };
-      })] : [t, []];
+        return { id, indices };
+      })] : [key, []];
     // Comma-separated lists
     case "emoteSets":
-      return [t, e.split(",")];
+      return [key, value.split(",")];
     // Thread ID
     case "threadId":
-      return [t, e.split("_")];
+      return [key, value.split("_")];
     // Flags
     case "flags": {
-      let a = [];
-      if (!e)
-        return [t, a];
-      let s = [...r[0]];
-      for (let n of e.split(",")) {
-        let [i, m] = n.split(":"), [l, d] = i.split("-"), o = [Number(l), Number(d) + 1], g = m.split("/");
-        a.push({
-          index: o,
-          flags: g.reduce((p, [h, , y]) => (p[h] = Number(y), p), {}),
-          text: s.slice(...o).join("")
+      let flags = [];
+      if (!value)
+        return [key, flags];
+      let messageSplit = [...params[0]];
+      for (let flag of value.split(",")) {
+        let [indices, flagType] = flag.split(":"), [start, end] = indices.split("-"), index = [Number(start), Number(end) + 1], flagTypeSplit = flagType.split("/");
+        flags.push({
+          index,
+          flags: flagTypeSplit.reduce((p, [type, , level]) => (p[type] = Number(level), p), {}),
+          text: messageSplit.slice(...index).join("")
         });
       }
-      return [t, a];
+      return [key, flags];
     }
     // Strings
     case "animationId":
@@ -304,23 +304,23 @@ function T(t, e, r) {
     case "targetUserId":
     case "userId":
     case "userType":
-      return [t, e];
+      return [key, value];
     case "msgParamProfileImageURL":
-      return ["msgParamProfileImageUrl", e];
+      return ["msgParamProfileImageUrl", value];
   }
-  return [t, e];
+  return [key, value];
 }
 
 // src/lib/Identity.ts
-var b = class {
+var Identity = class {
   name;
   id;
   token;
   isAnonymous() {
     return !this.token || typeof this.token == "string" && this.token.trim() === "";
   }
-  setToken(e) {
-    this.token = e;
+  setToken(value) {
+    this.token = value;
   }
   async getToken() {
     if (typeof this.token == "string")
@@ -330,78 +330,78 @@ var b = class {
     throw new Error("Invalid token");
   }
   [Symbol.for("nodejs.util.inspect.custom")]() {
-    let e = this.name ? `"${this.name}"` : "undefined", r = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined", a = this.token ? typeof this.token == "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
-    return `Identity { name: ${e}, id: ${r}, token: ${a} }`;
+    let name = this.name ? `"${this.name}"` : "undefined", id = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined", token = this.token ? typeof this.token == "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
+    return `Identity { name: ${name}, id: ${id}, token: ${token} }`;
   }
 };
 
 // src/lib/Channel.ts
-var u = class t {
-  constructor(e, r) {
-    this._id = e;
-    this._login = r;
-    this.id = e, this.login = r;
+var Channel = class _Channel {
+  constructor(_id, _login) {
+    this._id = _id;
+    this._login = _login;
+    this.id = _id, this.login = _login;
   }
-  static toLogin(e) {
-    let r = e.trim().toLowerCase();
-    return r.startsWith("#") ? r.slice(1) : r;
+  static toLogin(channelName) {
+    let name = channelName.trim().toLowerCase();
+    return name.startsWith("#") ? name.slice(1) : name;
   }
-  static toIrc(e) {
-    return e instanceof t ? `#${e.login}` : `#${t.toLogin(e)}`;
+  static toIrc(channelName) {
+    return channelName instanceof _Channel ? `#${channelName.login}` : `#${_Channel.toLogin(channelName)}`;
   }
   lastUserstate = null;
-  set id(e) {
-    if (typeof e != "string")
+  set id(value) {
+    if (typeof value != "string")
       throw new TypeError("Channel#id must be a string");
-    this._id = e;
+    this._id = value;
   }
   get id() {
     return this._id;
   }
-  set login(e) {
-    if (typeof e != "string")
+  set login(value) {
+    if (typeof value != "string")
       throw new TypeError("Channel#login must be a string");
-    this._login = t.toLogin(e);
+    this._login = _Channel.toLogin(value);
   }
   get login() {
     return this._login;
   }
   toString() {
-    return t.toIrc(this._login);
+    return _Channel.toIrc(this._login);
   }
-}, S = class extends u {
-  constructor(e, r) {
-    if (e === void 0 && r)
-      e = `unknownId:login(${u.toLogin(r)})`;
-    else if (r === void 0 && e)
-      r = `unknownLogin:id(${e})`;
-    else if (e === void 0 && r === void 0)
+}, ChannelPlaceholder = class extends Channel {
+  constructor(id, login) {
+    if (id === void 0 && login)
+      id = `unknownId:login(${Channel.toLogin(login)})`;
+    else if (login === void 0 && id)
+      login = `unknownLogin:id(${id})`;
+    else if (id === void 0 && login === void 0)
       throw new Error("ChannelPlaceholder must have either id or login");
-    super(e, r);
+    super(id, login);
   }
 };
 
 // src/Client.ts
-var q = "ACTION ", z = "", X = "ananonymousgifter";
-function E(t) {
+var ACTION_MESSAGE_PREFIX = "ACTION ", ACTION_MESSAGE_SUFFIX = "", ANONYMOUS_GIFTER_LOGIN = "ananonymousgifter";
+function getUser(tags) {
   return {
-    id: t.userId,
+    id: tags.userId,
     // login: tags.login ?? prefix.nick,
-    display: t.displayName,
-    color: t.color,
-    badges: t.badges,
-    badgeInfo: t.badgeInfo,
-    isBroadcaster: t.badges.has("broadcaster"),
-    isMod: t.mod,
-    isSubscriber: t.subscriber,
-    isFounder: t.badges.has("founder"),
-    isVip: "vip" in t && t.vip === !0,
-    type: t.userType
+    display: tags.displayName,
+    color: tags.color,
+    badges: tags.badges,
+    badgeInfo: tags.badgeInfo,
+    isBroadcaster: tags.badges.has("broadcaster"),
+    isMod: tags.mod,
+    isSubscriber: tags.subscriber,
+    isFounder: tags.badges.has("founder"),
+    isVip: "vip" in tags && tags.vip === !0,
+    type: tags.userType
     // isTurbo: 'turbo' in tags && tags.turbo === true,
     // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
   };
 }
-var P = class extends f {
+var Client = class extends EventEmitter {
   socket = void 0;
   keepalive = {
     maxWaitTimeoutMs: 15e3,
@@ -413,93 +413,93 @@ var P = class extends f {
   channels = /* @__PURE__ */ new Set();
   channelsById = /* @__PURE__ */ new Map();
   channelsByLogin = /* @__PURE__ */ new Map();
-  identity = new b();
+  identity = new Identity();
   wasCloseCalled = !1;
-  constructor(e) {
-    super(), this.channelsPendingJoin = (e?.channels ?? []).reduce((r, a) => (r.add(u.toLogin(a)), r), /* @__PURE__ */ new Set()), e?.token && this.identity.setToken(e.token);
+  constructor(opts) {
+    super(), this.channelsPendingJoin = (opts?.channels ?? []).reduce((p, n) => (p.add(Channel.toLogin(n)), p), /* @__PURE__ */ new Set()), opts?.token && this.identity.setToken(opts.token);
   }
   connect() {
     if (this.isConnected())
       throw new Error("Client is already connected");
     this.wasCloseCalled = !1;
-    let e = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-    this.socket = e, e.onmessage = (r) => this.onSocketMessage(r), e.onclose = (r) => this.onSocketClose(r), e.onopen = (r) => this.onSocketOpen(r), e.onerror = (r) => this.onSocketError(r);
+    let socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+    this.socket = socket, socket.onmessage = (e) => this.onSocketMessage(e), socket.onclose = (e) => this.onSocketClose(e), socket.onopen = (e) => this.onSocketOpen(e), socket.onerror = (e) => this.onSocketError(e);
   }
   close() {
     this.wasCloseCalled = !0, this.isConnected() && this.socket?.close();
   }
   async reconnect() {
     this.close();
-    let e = Math.min(1e3 * 1.23 ** this.keepalive.reconnectAttempts++, 6e4);
+    let reconnectWaitTime = Math.min(1e3 * 1.23 ** this.keepalive.reconnectAttempts++, 6e4);
     this.emit("reconnecting", {
       attempts: this.keepalive.reconnectAttempts,
-      waitTime: e
-    }), await new Promise((r) => setTimeout(r, e)), this.connect();
+      waitTime: reconnectWaitTime
+    }), await new Promise((resolve) => setTimeout(resolve, reconnectWaitTime)), this.connect();
   }
-  onSocketMessage(e) {
-    e.data.trim().split(`\r
-`).forEach((r) => this.onIrcLine(r));
+  onSocketMessage(event) {
+    event.data.trim().split(`\r
+`).forEach((line) => this.onIrcLine(line));
   }
-  onSocketClose(e) {
+  onSocketClose(event) {
     this.emit("close", {
-      reason: e.reason,
-      code: e.code,
+      reason: event.reason,
+      code: event.code,
       wasCloseCalled: this.wasCloseCalled
     });
   }
-  async onSocketOpen(e) {
+  async onSocketOpen(event) {
     this.keepalive.reconnectAttempts = 0;
-    let r = this.identity.isAnonymous(), a = r ? "schmoopiie" : `oauth:${await this.identity.getToken()}`;
-    this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [a] }), this.sendIrc({ command: "NICK", params: [r ? "justinfan123456" : "justinfan"] });
+    let isAnonymous = this.identity.isAnonymous(), token = isAnonymous ? "schmoopiie" : `oauth:${await this.identity.getToken()}`;
+    this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [token] }), this.sendIrc({ command: "NICK", params: [isAnonymous ? "justinfan123456" : "justinfan"] });
   }
-  onSocketError(e) {
-    this.emit("socketError", e);
+  onSocketError(event) {
+    this.emit("socketError", event);
   }
-  getChannelById(e) {
-    return this.channelsById.get(e);
+  getChannelById(id) {
+    return this.channelsById.get(id);
   }
-  getChannelByLogin(e) {
-    return this.channelsByLogin.get(u.toLogin(e));
+  getChannelByLogin(login) {
+    return this.channelsByLogin.get(Channel.toLogin(login));
   }
-  getChannelPlaceholder(e, r) {
-    return new S(e, r);
+  getChannelPlaceholder(id, login) {
+    return new ChannelPlaceholder(id, login);
   }
-  onIrcLine(e) {
-    let r = w(e, T);
-    r && this.onIrcMessage(r);
+  onIrcLine(line) {
+    let ircMessage = parse(line, parseTag2);
+    ircMessage && this.onIrcMessage(ircMessage);
   }
-  onIrcMessage(e) {
-    switch (this.emit("ircMessage", e), e.command) {
+  onIrcMessage(ircMessage) {
+    switch (this.emit("ircMessage", ircMessage), ircMessage.command) {
       case "PING":
-        return this.handlePING(e);
+        return this.handlePING(ircMessage);
       case "PONG":
-        return this.handlePONG(e);
+        return this.handlePONG(ircMessage);
       case "PRIVMSG":
-        return this.handlePRIVMSG(e);
+        return this.handlePRIVMSG(ircMessage);
       case "USERSTATE":
-        return this.handleUSERSTATE(e);
+        return this.handleUSERSTATE(ircMessage);
       case "GLOBALUSERSTATE":
-        return this.handleGLOBALUSERSTATE(e);
+        return this.handleGLOBALUSERSTATE(ircMessage);
       case "USERNOTICE":
-        return this.handleUSERNOTICE(e);
+        return this.handleUSERNOTICE(ircMessage);
       case "NOTICE":
-        return this.handleNOTICE(e);
+        return this.handleNOTICE(ircMessage);
       case "CLEARCHAT":
-        return this.handleCLEARCHAT(e);
+        return this.handleCLEARCHAT(ircMessage);
       case "CLEARMSG":
-        return this.handleCLEARMSG(e);
+        return this.handleCLEARMSG(ircMessage);
       case "ROOMSTATE":
-        return this.handleROOMSTATE(e);
+        return this.handleROOMSTATE(ircMessage);
       case "JOIN":
-        return this.handleJOIN(e);
+        return this.handleJOIN(ircMessage);
       case "PART":
-        return this.handlePART(e);
+        return this.handlePART(ircMessage);
       case "WHISPER":
-        return this.handleWHISPER(e);
+        return this.handleWHISPER(ircMessage);
       case "RECONNECT":
-        return this.handleRECONNECT(e);
+        return this.handleRECONNECT(ircMessage);
       case "376":
-        return this.handle376(e);
+        return this.handle376(ircMessage);
       // Ignore these messages
       case "CAP":
       case "001":
@@ -515,427 +515,427 @@ var P = class extends f {
         break;
     }
   }
-  handlePING(e) {
-    this.keepalive.lastPingReceivedAt = Date.now(), this.sendIrc({ command: "PONG", params: e.params });
+  handlePING(ircMessage) {
+    this.keepalive.lastPingReceivedAt = Date.now(), this.sendIrc({ command: "PONG", params: ircMessage.params });
   }
-  handlePONG(e) {
+  handlePONG(ircMessage) {
     if (clearTimeout(this.keepalive.pingTimeout), this.keepalive.lastPongReceivedAt = Date.now(), this.keepalive.lastPingSent === void 0)
       throw new Error("Received PONG without having sent a PING");
     this.keepalive.latencyMs = this.keepalive.lastPongReceivedAt - this.keepalive.lastPingSent, this.emit("pong");
   }
-  handlePRIVMSG({ tags: e, prefix: r, channel: a, params: s }) {
-    let n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, a), i = s[0], m = i.startsWith(q) && i.endsWith(z);
-    m && (i = i.slice(8, -1));
-    let l, d, o, g;
-    if ("sourceRoomId" in e && (l = {
-      channel: this.getChannelById(e.sourceRoomId) ?? this.getChannelPlaceholder(e.sourceRoomId, void 0),
+  handlePRIVMSG({ tags, prefix, channel: channelString, params }) {
+    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), text = params[0], isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+    isAction && (text = text.slice(8, -1));
+    let sharedChat, cheer, parent, reward;
+    if ("sourceRoomId" in tags && (sharedChat = {
+      channel: this.getChannelById(tags.sourceRoomId) ?? this.getChannelPlaceholder(tags.sourceRoomId, void 0),
       user: {
-        badges: e.sourceBadges,
-        badgeInfo: e.sourceBadgeInfo
+        badges: tags.sourceBadges,
+        badgeInfo: tags.sourceBadgeInfo
       },
       message: {
-        id: e.sourceId
+        id: tags.sourceId
       }
-    }), "bits" in e && (d = {
-      bits: e.bits
-    }), "replyParentMsgId" in e && (o = {
-      id: e.replyParentMsgId,
-      text: e.replyParentMsgBody,
+    }), "bits" in tags && (cheer = {
+      bits: tags.bits
+    }), "replyParentMsgId" in tags && (parent = {
+      id: tags.replyParentMsgId,
+      text: tags.replyParentMsgBody,
       user: {
-        id: e.replyParentUserId,
-        login: e.replyParentUserLogin,
-        display: e.replyParentDisplayName
+        id: tags.replyParentUserId,
+        login: tags.replyParentUserLogin,
+        display: tags.replyParentDisplayName
       },
       thread: {
-        id: e.replyThreadParentMsgId,
+        id: tags.replyThreadParentMsgId,
         user: {
-          id: e.replyThreadParentUserId,
-          login: e.replyThreadParentUserLogin,
-          display: e.replyThreadParentDisplayName
+          id: tags.replyThreadParentUserId,
+          login: tags.replyThreadParentUserLogin,
+          display: tags.replyThreadParentDisplayName
         }
       }
-    }), "customRewardId" in e)
-      g = {
+    }), "customRewardId" in tags)
+      reward = {
         type: "custom",
-        rewardId: e.customRewardId
+        rewardId: tags.customRewardId
       };
-    else if ("msgId" in e)
-      switch (e.msgId) {
+    else if ("msgId" in tags)
+      switch (tags.msgId) {
         case "highlighted-message": {
-          g = { type: "highlighted" };
+          reward = { type: "highlighted" };
           break;
         }
         case "skip-subs-mode-message": {
-          g = { type: "skipSubs" };
+          reward = { type: "skipSubs" };
           break;
         }
         case "gigantified-emote-message": {
-          g = {
+          reward = {
             type: "gigantifiedEmote",
             get emoteId() {
-              let p = e.emotes[0], h = p.indices[p.indices.length - 1][1];
-              for (let y = 1; y < e.emotes.length; y++) {
-                let C = e.emotes[y], c = C.indices[C.indices.length - 1][1];
-                c > h && (p = C, h = c);
+              let finalEmote = tags.emotes[0], finalIndex = finalEmote.indices[finalEmote.indices.length - 1][1];
+              for (let i = 1; i < tags.emotes.length; i++) {
+                let emote = tags.emotes[i], lastIndex = emote.indices[emote.indices.length - 1][1];
+                lastIndex > finalIndex && (finalEmote = emote, finalIndex = lastIndex);
               }
-              return p.id;
+              return finalEmote.id;
             }
           };
           break;
         }
         case "animated-message": {
-          g = {
+          reward = {
             type: "messageEffects",
-            animation: e.animationId
+            animation: tags.animationId
           };
           break;
         }
         default: {
-          g = {
+          reward = {
             type: "unknown",
-            msgId: e.msgId
+            msgId: tags.msgId
           };
           break;
         }
       }
     this.emit("message", {
-      channel: n,
+      channel,
       user: {
-        ...E(e),
-        login: r.nick,
-        isTurbo: e.turbo,
-        isReturningChatter: e.returningChatter
+        ...getUser(tags),
+        login: prefix.nick,
+        isTurbo: tags.turbo,
+        isReturningChatter: tags.returningChatter
       },
       message: {
-        id: e.id,
-        text: i,
-        flags: e.flags,
-        emotes: e.emotes,
-        isAction: m,
-        isFirst: e.firstMsg
+        id: tags.id,
+        text,
+        flags: tags.flags,
+        emotes: tags.emotes,
+        isAction,
+        isFirst: tags.firstMsg
       },
-      sharedChat: l,
+      sharedChat,
       announcement: void 0,
-      cheer: d,
-      parent: o,
-      reward: g,
-      tags: e
+      cheer,
+      parent,
+      reward,
+      tags
     });
   }
-  handleUSERSTATE({ tags: e, channel: r }) {
-    let a = this.getChannelByLogin(r) ?? this.getChannelPlaceholder(void 0, r), s = {
+  handleUSERSTATE({ tags, channel: channelName }) {
+    let channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(void 0, channelName), user = {
       id: this.identity.id,
-      color: e.color,
+      color: tags.color,
       login: this.identity.name,
-      display: e.displayName,
-      badges: e.badges,
-      badgeInfo: e.badgeInfo,
-      isBroadcaster: e.badges.has("broadcaster"),
-      isMod: e.mod,
-      isSubscriber: e.subscriber,
-      isFounder: e.badges.has("founder"),
-      isTurbo: e.badges.has("turbo"),
-      isVip: e.badges.has("vip"),
-      type: e.userType
+      display: tags.displayName,
+      badges: tags.badges,
+      badgeInfo: tags.badgeInfo,
+      isBroadcaster: tags.badges.has("broadcaster"),
+      isMod: tags.mod,
+      isSubscriber: tags.subscriber,
+      isFounder: tags.badges.has("founder"),
+      isTurbo: tags.badges.has("turbo"),
+      isVip: tags.badges.has("vip"),
+      type: tags.userType
     };
     this.emit("userState", {
-      channel: a,
-      user: s
+      channel,
+      user
     });
   }
-  handleGLOBALUSERSTATE({ tags: e }) {
-    this.identity.id = e.userId, this.emit("globalUserState", {
+  handleGLOBALUSERSTATE({ tags }) {
+    this.identity.id = tags.userId, this.emit("globalUserState", {
       user: {
-        id: e.userId,
-        display: e.displayName,
-        color: e.color,
-        badges: e.badges,
-        badgeInfo: e.badgeInfo,
-        isTurbo: e.badges.has("turbo"),
-        type: e.userType
+        id: tags.userId,
+        display: tags.displayName,
+        color: tags.color,
+        badges: tags.badges,
+        badgeInfo: tags.badgeInfo,
+        isTurbo: tags.badges.has("turbo"),
+        type: tags.userType
       },
-      emoteSets: e.emoteSets,
-      tags: e
+      emoteSets: tags.emoteSets,
+      tags
     });
   }
-  handleUSERNOTICE({ tags: e, channel: r, params: a }) {
-    let s = a[0], n = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, r), i = {
-      ...E(e),
-      login: e.login,
-      isTurbo: "turbo" in e && e.turbo === !0,
-      isReturningChatter: "returningChatter" in e && e.returningChatter === !0
-    }, m;
-    "msgParamGoalContributionType" in e && e.msgParamGoalContributionType && (m = {
-      type: e.msgParamGoalContributionType,
-      description: e.msgParamGoalDescription ?? "",
-      current: e.msgParamGoalCurrentContributions,
-      target: e.msgParamGoalTargetContributions,
-      userContributions: e.msgParamGoalUserContributions
+  handleUSERNOTICE({ tags, channel: channelString, params }) {
+    let text = params[0], channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), user = {
+      ...getUser(tags),
+      login: tags.login,
+      isTurbo: "turbo" in tags && tags.turbo === !0,
+      isReturningChatter: "returningChatter" in tags && tags.returningChatter === !0
+    }, goal;
+    "msgParamGoalContributionType" in tags && tags.msgParamGoalContributionType && (goal = {
+      type: tags.msgParamGoalContributionType,
+      description: tags.msgParamGoalDescription ?? "",
+      current: tags.msgParamGoalCurrentContributions,
+      target: tags.msgParamGoalTargetContributions,
+      userContributions: tags.msgParamGoalUserContributions
     });
-    let l = "Prime", d = (o) => typeof o != "string" || o === l ? 1 : parseInt(o.slice(0, 1));
-    switch (e.msgId) {
+    let PRIME = "Prime", getTier = (plan) => typeof plan != "string" || plan === PRIME ? 1 : parseInt(plan.slice(0, 1));
+    switch (tags.msgId) {
       case "announcement": {
         this.emit("message", {
-          channel: n,
-          user: i,
+          channel,
+          user,
           message: {
-            id: e.id,
-            text: s,
-            flags: e.flags,
-            emotes: e.emotes,
+            id: tags.id,
+            text,
+            flags: tags.flags,
+            emotes: tags.emotes,
             isAction: !1,
-            isFirst: "firstMsg" in e && e.firstMsg === !0
+            isFirst: "firstMsg" in tags && tags.firstMsg === !0
           },
           sharedChat: void 0,
           announcement: {
-            color: e.msgParamColor
+            color: tags.msgParamColor
           },
           cheer: void 0,
           parent: void 0,
           reward: void 0,
-          tags: e
+          tags
         });
         break;
       }
       case "sub": {
         this.emit("sub", {
           type: "sub",
-          channel: n,
-          user: i,
+          channel,
+          user,
           plan: {
-            name: e.msgParamSubPlanName,
-            plan: e.msgParamSubPlan,
-            tier: d(e.msgParamSubPlan),
-            isPrime: e.msgParamSubPlan === l
+            name: tags.msgParamSubPlanName,
+            plan: tags.msgParamSubPlan,
+            tier: getTier(tags.msgParamSubPlan),
+            isPrime: tags.msgParamSubPlan === PRIME
           },
           multiMonth: {
-            duration: e.msgParamMultimonthDuration ?? 0
+            duration: tags.msgParamMultimonthDuration ?? 0
           },
-          goal: m,
-          tags: e
+          goal,
+          tags
         });
         break;
       }
       case "resub": {
-        let o, g;
-        e.msgParamShouldShareStreak && (o = {
-          months: e.msgParamStreakMonths
-        }), e.msgParamWasGifted && (g = {
-          monthBeingRedeemed: e.msgParamGiftMonthBeingRedeemed,
-          months: e.msgParamGiftMonths,
+        let streak, gift;
+        tags.msgParamShouldShareStreak && (streak = {
+          months: tags.msgParamStreakMonths
+        }), tags.msgParamWasGifted && (gift = {
+          monthBeingRedeemed: tags.msgParamGiftMonthBeingRedeemed,
+          months: tags.msgParamGiftMonths,
           gifter: {
-            isAnon: e.msgParamAnonGift,
-            id: e.msgParamGifterId,
-            login: e.msgParamGifterLogin,
-            display: e.msgParamGifterName
+            isAnon: tags.msgParamAnonGift,
+            id: tags.msgParamGifterId,
+            login: tags.msgParamGifterLogin,
+            display: tags.msgParamGifterName
           }
         }), this.emit("sub", {
           type: "resub",
-          channel: n,
-          user: i,
-          cumulativeMonths: e.msgParamCumulativeMonths,
+          channel,
+          user,
+          cumulativeMonths: tags.msgParamCumulativeMonths,
           multiMonth: {
-            duration: e.msgParamMultimonthDuration ?? 0,
-            tenure: e.msgParamMultimonthTenure ?? 0
+            duration: tags.msgParamMultimonthDuration ?? 0,
+            tenure: tags.msgParamMultimonthTenure ?? 0
           },
-          streak: o,
+          streak,
           plan: {
-            name: e.msgParamSubPlanName,
-            plan: e.msgParamSubPlan,
-            tier: d(e.msgParamSubPlan),
-            isPrime: e.msgParamSubPlan === l
+            name: tags.msgParamSubPlanName,
+            plan: tags.msgParamSubPlan,
+            tier: getTier(tags.msgParamSubPlan),
+            isPrime: tags.msgParamSubPlan === PRIME
           },
-          gift: g,
-          tags: e
+          gift,
+          tags
         });
         break;
       }
       case "subgift": {
-        let o;
-        e.msgParamCommunityGiftId && (o = {
-          id: e.msgParamCommunityGiftId
+        let mystery;
+        tags.msgParamCommunityGiftId && (mystery = {
+          id: tags.msgParamCommunityGiftId
         }), this.emit("sub", {
           type: "subGift",
-          channel: n,
-          user: i,
+          channel,
+          user,
           recipient: {
-            id: e.msgParamRecipientId,
-            login: e.msgParamRecipientUserName,
-            display: e.msgParamRecipientDisplayName
+            id: tags.msgParamRecipientId,
+            login: tags.msgParamRecipientUserName,
+            display: tags.msgParamRecipientDisplayName
           },
           plan: {
-            name: e.msgParamSubPlanName,
-            plan: e.msgParamSubPlan,
-            tier: d(e.msgParamSubPlan),
-            isPrime: e.msgParamSubPlan === l
+            name: tags.msgParamSubPlanName,
+            plan: tags.msgParamSubPlan,
+            tier: getTier(tags.msgParamSubPlan),
+            isPrime: tags.msgParamSubPlan === PRIME
           },
           gift: {
-            months: e.msgParamGiftMonths,
-            theme: e.msgParamGiftTheme,
-            originId: e.msgParamOriginId
+            months: tags.msgParamGiftMonths,
+            theme: tags.msgParamGiftTheme,
+            originId: tags.msgParamOriginId
           },
-          mystery: o,
-          goal: m,
-          tags: e
+          mystery,
+          goal,
+          tags
         });
         break;
       }
       case "submysterygift": {
-        let o;
-        "msgParamGiftMatch" in e && (o = {
-          type: e.msgParamGiftMatch,
-          bonusCount: e.msgParamGiftMatchBonusCount,
-          extraCount: e.msgParamGiftMatchExtraCount,
-          originalGifter: e.msgParamGiftMatchGifterDisplayName
+        let giftMatch;
+        "msgParamGiftMatch" in tags && (giftMatch = {
+          type: tags.msgParamGiftMatch,
+          bonusCount: tags.msgParamGiftMatchBonusCount,
+          extraCount: tags.msgParamGiftMatchExtraCount,
+          originalGifter: tags.msgParamGiftMatchGifterDisplayName
         }), this.emit("sub", {
           type: "subMysteryGift",
-          channel: n,
-          user: i,
+          channel,
+          user,
           plan: {
             name: void 0,
-            plan: e.msgParamSubPlan,
-            tier: d(e.msgParamSubPlan),
+            plan: tags.msgParamSubPlan,
+            tier: getTier(tags.msgParamSubPlan),
             isPrime: !1
           },
           mystery: {
-            id: e.msgParamCommunityGiftId,
-            count: e.msgParamMassGiftCount,
-            theme: e.msgParamGiftTheme,
-            gifterLifetimeCount: e.msgParamSenderCount
+            id: tags.msgParamCommunityGiftId,
+            count: tags.msgParamMassGiftCount,
+            theme: tags.msgParamGiftTheme,
+            gifterLifetimeCount: tags.msgParamSenderCount
           },
-          giftMatch: o,
-          goal: m,
-          tags: e
+          giftMatch,
+          goal,
+          tags
         });
         break;
       }
       case "standardpayforward": {
         this.emit("sub", {
           type: "standardPayForward",
-          channel: n,
-          user: i,
+          channel,
+          user,
           recipient: {
-            id: e.msgParamRecipientId,
-            login: e.msgParamRecipientUserName,
-            display: e.msgParamRecipientDisplayName
+            id: tags.msgParamRecipientId,
+            login: tags.msgParamRecipientUserName,
+            display: tags.msgParamRecipientDisplayName
           },
-          tags: e
+          tags
         });
         break;
       }
       case "communitypayforward": {
         this.emit("sub", {
           type: "communityPayForward",
-          channel: n,
-          user: i,
+          channel,
+          user,
           priorGifter: {
-            isAnon: e.msgParamPriorGifterAnonymous,
-            id: e.msgParamPriorGifterId,
-            login: e.msgParamPriorGifterUserName,
-            display: e.msgParamPriorGifterDisplayName
+            isAnon: tags.msgParamPriorGifterAnonymous,
+            id: tags.msgParamPriorGifterId,
+            login: tags.msgParamPriorGifterUserName,
+            display: tags.msgParamPriorGifterDisplayName
           },
-          tags: e
+          tags
         });
         break;
       }
       case "giftpaidupgrade": {
         this.emit("sub", {
           type: "giftPaidUpgrade",
-          channel: n,
-          user: i,
+          channel,
+          user,
           gifter: {
-            isAnon: e.msgParamSenderLogin === X,
-            login: e.msgParamSenderLogin,
-            display: e.msgParamSenderName
+            isAnon: tags.msgParamSenderLogin === ANONYMOUS_GIFTER_LOGIN,
+            login: tags.msgParamSenderLogin,
+            display: tags.msgParamSenderName
           },
-          tags: e
+          tags
         });
         break;
       }
       case "primepaidupgrade": {
         this.emit("sub", {
           type: "primePaidUpgrade",
-          channel: n,
-          user: i,
+          channel,
+          user,
           plan: {
             name: void 0,
-            plan: e.msgParamSubPlan,
-            tier: d(e.msgParamSubPlan),
+            plan: tags.msgParamSubPlan,
+            tier: getTier(tags.msgParamSubPlan),
             isPrime: !1
           },
-          tags: e
+          tags
         });
         break;
       }
       case "raid": {
         this.emit("raid", {
-          channel: n,
+          channel,
           user: {
-            ...E(e),
-            login: e.msgParamLogin
+            ...getUser(tags),
+            login: tags.msgParamLogin
             // isTurbo: 'turbo' in tags && tags.turbo === true,
             // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
           },
-          viewers: e.msgParamViewerCount,
-          tags: e
+          viewers: tags.msgParamViewerCount,
+          tags
         });
         break;
       }
       case "bitsbadgetier": {
         this.emit("badgeUpgrade", {
-          channel: n,
-          user: i,
+          channel,
+          user,
           type: "bits",
-          threshold: e.msgParamThreshold,
-          tags: e,
+          threshold: tags.msgParamThreshold,
+          tags,
           message: {
-            id: e.id,
-            text: s,
-            flags: e.flags,
-            emotes: e.emotes,
+            id: tags.id,
+            text,
+            flags: tags.flags,
+            emotes: tags.emotes,
             isAction: !1,
-            isFirst: "firstMsg" in e && e.firstMsg === !0
+            isFirst: "firstMsg" in tags && tags.firstMsg === !0
           }
         });
         break;
       }
       case "sharedchatnotice": {
-        let g = {
-          channel: this.getChannelById(e.sourceRoomId) ?? this.getChannelPlaceholder(e.sourceRoomId, void 0),
+        let sharedChat = {
+          channel: this.getChannelById(tags.sourceRoomId) ?? this.getChannelPlaceholder(tags.sourceRoomId, void 0),
           user: {
-            badges: e.sourceBadges,
-            badgeInfo: e.sourceBadgeInfo
+            badges: tags.sourceBadges,
+            badgeInfo: tags.sourceBadgeInfo
           },
           message: {
-            id: e.sourceId
+            id: tags.sourceId
           }
         };
         this.emit("sharedChatNotice", {
-          type: e.sourceMsgId,
-          channel: n,
-          sharedChat: g,
-          timestamp: e.tmiSentTs,
-          tags: e
+          type: tags.sourceMsgId,
+          channel,
+          sharedChat,
+          timestamp: tags.tmiSentTs,
+          tags
         });
         break;
       }
     }
   }
-  handleNOTICE({ channel: e, tags: r, params: a }) {
-    let { msgId: s } = r;
-    if (!s) {
-      let i = a[1];
-      switch (this.close(), i) {
+  handleNOTICE({ channel: channelName, tags, params }) {
+    let { msgId } = tags;
+    if (!msgId) {
+      let message = params[1];
+      switch (this.close(), message) {
         case "Login authentication failed":
           break;
         case "Improperly formatted auth":
-          let m = new Error(`Catatrophic error: ${i}`);
-          this.emit("error", m);
+          let error = new Error(`Catatrophic error: ${message}`);
+          this.emit("error", error);
       }
       return;
     }
-    let n = this.getChannelByLogin(e) ?? this.getChannelPlaceholder(void 0, e);
-    switch (s) {
+    let channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(void 0, channelName);
+    switch (msgId) {
       // Ignored messages
       case "emote_only_on":
       case "emote_only_off":
@@ -953,163 +953,163 @@ var P = class extends f {
       case "msg_channel_suspended":
       case "unrecognized_cmd":
         this.emit("messageDropped", {
-          channel: n,
-          reason: s,
-          tags: r
+          channel,
+          reason: msgId,
+          tags
         });
         break;
     }
   }
-  handleCLEARCHAT({ channel: e, tags: r, params: a }) {
-    let s = this.getChannelById(r.roomId) ?? this.getChannelPlaceholder(r.roomId, e), n = r.tmiSentTs;
-    "banDuration" in r ? this.emit("moderation", {
+  handleCLEARCHAT({ channel: channelName, tags, params }) {
+    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelName), timestamp = tags.tmiSentTs;
+    "banDuration" in tags ? this.emit("moderation", {
       type: "timeout",
-      channel: s,
-      duration: r.banDuration,
+      channel,
+      duration: tags.banDuration,
       user: {
-        id: r.targetUserId,
-        login: a[0]
+        id: tags.targetUserId,
+        login: params[0]
       },
-      timestamp: n,
-      tags: r
-    }) : "targetUserId" in r ? this.emit("moderation", {
+      timestamp,
+      tags
+    }) : "targetUserId" in tags ? this.emit("moderation", {
       type: "ban",
-      channel: s,
+      channel,
       user: {
-        id: r.targetUserId,
-        login: a[0]
+        id: tags.targetUserId,
+        login: params[0]
       },
-      timestamp: n,
-      tags: r
+      timestamp,
+      tags
     }) : this.emit("moderation", {
       type: "clearChat",
-      channel: s,
-      timestamp: n,
-      tags: r
+      channel,
+      timestamp,
+      tags
     });
   }
-  handleCLEARMSG({ tags: e, channel: r, params: a }) {
-    let s = this.getChannelById(e.roomId) ?? this.getChannelPlaceholder(e.roomId, r);
+  handleCLEARMSG({ tags, channel: channelName, params }) {
+    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelName);
     this.emit("moderation", {
       type: "deleteMessage",
-      channel: s,
+      channel,
       user: {
-        login: a[0]
+        login: params[0]
       },
       message: {
-        id: e.targetMsgId,
-        text: a[0]
+        id: tags.targetMsgId,
+        text: params[0]
       },
-      timestamp: e.tmiSentTs,
-      tags: e
+      timestamp: tags.tmiSentTs,
+      tags
     });
   }
-  handleROOMSTATE({ tags: e, channel: r }) {
-    let a = this.getChannelById(e.roomId);
-    a || (a = new u(e.roomId, r), this.channels.add(a), this.channelsById.set(e.roomId, a), this.channelsByLogin.set(r, a)), this.emit("roomState", {
-      channel: a,
-      emoteOnly: e.emoteOnly,
-      followersOnly: e.followersOnly,
-      unique: e.unique,
-      slow: e.slow,
-      subsOnly: e.subsOnly,
-      tags: e
+  handleROOMSTATE({ tags, channel: channelName }) {
+    let channel = this.getChannelById(tags.roomId);
+    channel || (channel = new Channel(tags.roomId, channelName), this.channels.add(channel), this.channelsById.set(tags.roomId, channel), this.channelsByLogin.set(channelName, channel)), this.emit("roomState", {
+      channel,
+      emoteOnly: tags.emoteOnly,
+      followersOnly: tags.followersOnly,
+      unique: tags.unique,
+      slow: tags.slow,
+      subsOnly: tags.subsOnly,
+      tags
     });
   }
-  handleJOIN(e) {
+  handleJOIN(ircMessage) {
   }
-  handlePART({ channel: e }) {
-    let r = this.getChannelByLogin(e) ?? this.getChannelPlaceholder(void 0, e);
+  handlePART({ channel: channelName }) {
+    let channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(void 0, channelName);
     this.emit("part", {
-      channel: r
+      channel
     });
   }
-  handleWHISPER({ tags: e, prefix: r, params: a }) {
-    let s = a[1], n = s.startsWith("/me ");
-    n && (s = s.slice(4)), this.emit("whisper", {
+  handleWHISPER({ tags, prefix, params }) {
+    let text = params[1], isAction = text.startsWith("/me ");
+    isAction && (text = text.slice(4)), this.emit("whisper", {
       user: {
-        id: e.userId,
-        login: r.nick,
-        display: e.displayName,
-        color: e.color,
-        badges: e.badges,
-        isTurbo: e.turbo,
-        type: e.userType
+        id: tags.userId,
+        login: prefix.nick,
+        display: tags.displayName,
+        color: tags.color,
+        badges: tags.badges,
+        isTurbo: tags.turbo,
+        type: tags.userType
       },
       thread: {
-        id: e.threadId
+        id: tags.threadId
       },
       message: {
-        id: e.messageId,
-        text: s,
-        emotes: e.emotes,
-        isAction: n
+        id: tags.messageId,
+        text,
+        emotes: tags.emotes,
+        isAction
       }
     });
   }
-  handleRECONNECT(e) {
+  handleRECONNECT(ircMessage) {
     this.reconnect();
   }
-  handle376(e) {
-    this.identity.name = e.params[0], this.emit("connect"), this.joinPendingChannels();
+  handle376(ircMessage) {
+    this.identity.name = ircMessage.params[0], this.emit("connect"), this.joinPendingChannels();
   }
   isConnected() {
     return !!this.socket && this.socket.readyState === WebSocket.OPEN;
   }
-  send(e) {
+  send(message) {
     if (!this.isConnected())
       throw new Error("Not connected");
-    this.socket.send(e);
+    this.socket.send(message);
   }
-  sendIrc(e) {
-    let r = N({
-      ...e,
-      channel: e.channel?.toString()
+  sendIrc(opts) {
+    let result = format({
+      ...opts,
+      channel: opts.channel?.toString()
     });
-    if (!r)
+    if (!result)
       throw new Error("Result message is empty");
-    this.send(r);
+    this.send(result);
   }
-  async join(e) {
-    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), a = this.waitForCommand(
+  async join(channelName) {
+    let channel = typeof channelName == "string" ? Channel.toIrc(channelName) : channelName.toString(), responder = this.waitForCommand(
       this.identity.isAnonymous() ? "JOIN" : "USERSTATE",
-      (s) => s.channel === r && (s.prefix.nick ? s.prefix.nick === this.identity.name : !0),
-      { channelHint: u.toIrc(e) }
+      (m) => m.channel === channel && (m.prefix.nick ? m.prefix.nick === this.identity.name : !0),
+      { channelHint: Channel.toIrc(channelName) }
     );
-    this.sendIrc({ command: "JOIN", channel: r }), await a;
+    this.sendIrc({ command: "JOIN", channel }), await responder;
   }
-  async part(e) {
-    let r = typeof e == "string" ? u.toIrc(e) : e.toString(), a = this.waitForCommand(
+  async part(channelName) {
+    let channel = typeof channelName == "string" ? Channel.toIrc(channelName) : channelName.toString(), responder = this.waitForCommand(
       "PART",
-      (s) => s.channel === r && s.prefix.nick === this.identity.name,
-      { channelHint: u.toIrc(e) }
+      (m) => m.channel === channel && m.prefix.nick === this.identity.name,
+      { channelHint: Channel.toIrc(channelName) }
     );
-    this.sendIrc({ command: "PART", channel: r }), await a;
+    this.sendIrc({ command: "PART", channel }), await responder;
   }
-  async say(e, r, a = {}) {
-    if (r.length === 0)
+  async say(channelName, message, tags = {}) {
+    if (message.length === 0)
       throw new Error("Message cannot be empty");
-    if (r.length > 500)
+    if (message.length > 500)
       throw new Error("Message is too long (max 500 characters)");
-    let s = {
+    let finalTags = {
       "client-nonce": this.generateClientNonce(),
-      ...a
-    }, n = s["client-nonce"], i = this.waitForCommand(
+      ...tags
+    }, clientNonce = finalTags["client-nonce"], responder = this.waitForCommand(
       "USERSTATE",
-      (m) => m.tags.clientNonce === n,
-      { channelHint: u.toIrc(e) }
+      (m) => m.tags.clientNonce === clientNonce,
+      { channelHint: Channel.toIrc(channelName) }
     );
     return this.sendIrc({
       command: "PRIVMSG",
-      channel: e,
-      params: [r],
-      tags: s
-    }), await i;
+      channel: channelName,
+      params: [message],
+      tags: finalTags
+    }), await responder;
   }
-  async reply(e, r, a, s = {}) {
-    return this.say(e, r, {
-      "reply-parent-msg-id": a,
-      ...s
+  async reply(channelName, message, replyParentMsgId, tags = {}) {
+    return this.say(channelName, message, {
+      "reply-parent-msg-id": replyParentMsgId,
+      ...tags
     });
   }
   generateClientNonce() {
@@ -1119,39 +1119,39 @@ var P = class extends f {
     this.keepalive.lastPingSent = Date.now(), this.sendIrc({ command: "PING" }), this.keepalive.pingTimeout = setTimeout(() => this.reconnect(), this.keepalive.pingTimeoutSeconds * 1e3);
   }
   async joinPendingChannels() {
-    for (let e of this.channelsPendingJoin)
+    for (let channel of this.channelsPendingJoin)
       try {
-        await this.join(e);
-      } catch (r) {
-        let a = new Error("Failed to join channel", { cause: r });
-        this.emit("error", a);
+        await this.join(channel);
+      } catch (err) {
+        let newError = new Error("Failed to join channel", { cause: err });
+        this.emit("error", newError);
       }
   }
-  waitForCommand(e, r, a) {
-    return new Promise((s, n) => {
-      let i = a?.failOnDrop ?? !0, m = a?.timeoutMs ?? Math.max(1e3, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2)), l = (p) => {
-        p.command === e && (!r || r(p)) && (o(), clearTimeout(g), s(p));
-      }, d = (p) => {
-        a?.channelHint && p.channel.toString() !== a?.channelHint || (o(), n(new Error(`Message dropped: ${p.reason}`, { cause: p })));
-      }, o = () => {
-        this.off("ircMessage", l), i && this.off("messageDropped", d);
-      }, g = setTimeout(() => {
-        o();
-        let p = new Error(
-          `Did not receive command in time (Command: ${e}, Waited: ${m}ms)`,
-          { cause: e }
+  waitForCommand(command, filterCallback, opts) {
+    return new Promise((resolve, reject) => {
+      let failOnDrop = opts?.failOnDrop ?? !0, timeoutMs = opts?.timeoutMs ?? Math.max(1e3, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2)), commandListener = (ircMessage) => {
+        ircMessage.command === command && (!filterCallback || filterCallback(ircMessage)) && (stop(), clearTimeout(timeout), resolve(ircMessage));
+      }, dropListener = (event) => {
+        opts?.channelHint && event.channel.toString() !== opts?.channelHint || (stop(), reject(new Error(`Message dropped: ${event.reason}`, { cause: event })));
+      }, stop = () => {
+        this.off("ircMessage", commandListener), failOnDrop && this.off("messageDropped", dropListener);
+      }, timeout = setTimeout(() => {
+        stop();
+        let err = new Error(
+          `Did not receive command in time (Command: ${command}, Waited: ${timeoutMs}ms)`,
+          { cause: command }
         );
-        n(p);
-      }, m);
-      this.on("ircMessage", l), i && this.on("messageDropped", d);
+        reject(err);
+      }, timeoutMs);
+      this.on("ircMessage", commandListener), failOnDrop && this.on("messageDropped", dropListener);
     });
   }
 };
 
 // src/index.ts
-var Y = {
-  Client: P,
-  parseTag: T
+var src_default = {
+  Client,
+  parseTag: parseTag2
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

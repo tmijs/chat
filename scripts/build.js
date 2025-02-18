@@ -24,7 +24,6 @@ const opts = {
 const node = {
 	platform: 'node',
 	minifySyntax: true,
-	minifyIdentifiers: true,
 };
 
 /** @type {BuildOptions} */
