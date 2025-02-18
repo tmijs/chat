@@ -1,29 +1,7 @@
 {
   "name": "@tmi.js/chat",
   "version": "0.1.2",
-  "type": "module",
-  "main": "./dist/tmi.node.mjs",
-  "browser": "./dist/tmi.browser.min.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/tmi.node.mjs",
-      "require": "./dist/tmi.node.cjs",
-      "default": "./dist/tmi.node.cjs"
-    }
-  },
-  "engines": {
-    "node": ">=22"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist/* && node scripts/build.js && tsc",
-    "tsc-w": "tsc -w"
-  },
-  "files": [
-    "dist"
-  ],
+  "description": "Connect to Twitch IRC chat",
   "keywords": [
     "twitch",
     "irc",
@@ -34,7 +12,29 @@
   "homepage": "https://github.com/tmijs/chat#readme",
   "repository": "github:tmijs/chat",
   "license": "MIT",
-  "description": "Connect to Twitch IRC chat",
+  "type": "module",
+  "main": "./dist/tmi.node.mjs",
+  "browser": "./dist/tmi.browser.min.mjs",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/tmi.node.mjs",
+      "require": "./dist/tmi.node.cjs",
+      "default": "./dist/tmi.node.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist/* && node scripts/build.js && tsc",
+    "tsc-w": "tsc -w"
+  },
   "devDependencies": {
     "@types/node": "^22.13.4",
     "esbuild": "^0.25.0",
