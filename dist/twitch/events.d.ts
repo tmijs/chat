@@ -32,6 +32,7 @@ interface SharedChatTags {
     message: {
         id: TagType.id;
     };
+    sourceOnly: boolean;
 }
 export declare namespace Message {
     type Tags = PRIVMSG.Tags;

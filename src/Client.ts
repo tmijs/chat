@@ -273,7 +273,8 @@ export class Client extends EventEmitter<ClientEvents> {
 				},
 				message: {
 					id: tags.sourceId!
-				}
+				},
+				sourceOnly: tags.sourceOnly!,
 			};
 		}
 		if('bits' in tags) {
@@ -683,7 +684,7 @@ export class Client extends EventEmitter<ClientEvents> {
 			}
 			case 'sharedchatnotice': {
 				const sharedChannel = this.getChannelById(tags.sourceRoomId!) ?? this.getChannelPlaceholder(tags.sourceRoomId, undefined);
-				const sharedChat = {
+				const sharedChat: SharedChatNotice.Event['sharedChat'] = {
 					channel: sharedChannel,
 					user: {
 						badges: tags.sourceBadges!,
@@ -691,7 +692,8 @@ export class Client extends EventEmitter<ClientEvents> {
 					},
 					message: {
 						id: tags.sourceId!
-					}
+					},
+					sourceOnly: tags.sourceOnly ?? false,
 				};
 				this.emit('sharedChatNotice', {
 					type: tags.sourceMsgId,

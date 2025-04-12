@@ -53,6 +53,7 @@ export declare namespace PRIVMSG {
         sourceBadgeInfo?: BadgeInfo;
         sourceBadges?: Badges;
         sourceId?: TagType.sourceId;
+        sourceOnly?: TagType.sourceOnly;
         sourceRoomId?: TagType.sourceRoomId;
         subscriber: TagType.subscriber;
         tmiSentTs: TagType.tmiSentTs;
@@ -313,6 +314,7 @@ export declare namespace USERNOTICE {
         sourceBadges: Badges;
         sourceId: TagType.sourceId;
         sourceMsgId: TagType.sourceMsgId;
+        sourceOnly: TagType.sourceOnly;
         sourceRoomId: TagType.sourceRoomId;
     }
     export type Tags = TagsAnnouncement | TagsRaid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsBitsBadgeTier | TagsSharedChatNotice;
@@ -495,6 +497,7 @@ export declare namespace TagType {
     type roomId = string;
     type sourceId = string;
     type sourceMsgId = string;
+    type sourceOnly = boolean;
     type sourceRoomId = string;
     type systemMsg = string;
     type targetMsgId = string;

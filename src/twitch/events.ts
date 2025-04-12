@@ -48,6 +48,7 @@ interface SharedChatTags {
 	message: {
 		id: TagType.id;
 	};
+	sourceOnly: boolean;
 }
 
 export namespace Message {

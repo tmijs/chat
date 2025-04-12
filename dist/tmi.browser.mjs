@@ -243,6 +243,7 @@ function parseTag2(key, value, params) {
     case "mod":
     case "msgParamShouldShareStreak":
     case "returningChatter":
+    case "sourceOnly":
     case "subsOnly":
     case "subscriber":
     case "turbo":
@@ -658,7 +659,8 @@ var Client = class extends EventEmitter {
         },
         message: {
           id: tags.sourceId
-        }
+        },
+        sourceOnly: tags.sourceOnly
       };
     }
     if ("bits" in tags) {
@@ -1072,7 +1074,8 @@ var Client = class extends EventEmitter {
           },
           message: {
             id: tags.sourceId
-          }
+          },
+          sourceOnly: tags.sourceOnly ?? false
         };
         this.emit("sharedChatNotice", {
           type: tags.sourceMsgId,

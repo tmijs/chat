@@ -71,6 +71,7 @@ export namespace PRIVMSG {
 		sourceBadgeInfo?: BadgeInfo;
 		sourceBadges?: Badges;
 		sourceId?: TagType.sourceId;
+		sourceOnly?: TagType.sourceOnly;
 		sourceRoomId?: TagType.sourceRoomId;
 		subscriber: TagType.subscriber;
 		tmiSentTs: TagType.tmiSentTs;
@@ -348,6 +349,7 @@ export namespace USERNOTICE {
 		sourceBadges: Badges;
 		sourceId: TagType.sourceId;
 		sourceMsgId: TagType.sourceMsgId;
+		sourceOnly: TagType.sourceOnly;
 		sourceRoomId: TagType.sourceRoomId;
 	}
 	export type Tags =
@@ -564,6 +566,7 @@ export namespace TagType {
 	export type roomId = string;
 	export type sourceId = string;
 	export type sourceMsgId = string;
+	export type sourceOnly = boolean;
 	export type sourceRoomId = string;
 	export type systemMsg = string;
 	export type targetMsgId = string;
@@ -623,6 +626,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'mod':
 		case 'msgParamShouldShareStreak':
 		case 'returningChatter':
+		case 'sourceOnly':
 		case 'subsOnly':
 		case 'subscriber':
 		case 'turbo':
