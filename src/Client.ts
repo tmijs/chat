@@ -4,7 +4,7 @@ import type { Emote } from './types';
 import EventEmitter from './lib/EventEmitter';
 import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState } from './twitch/events';
+import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 
 const ACTION_MESSAGE_PREFIX = '\u0001ACTION ';
@@ -67,6 +67,7 @@ type ChatEvents = {
 	moderation: (event: Moderation.Event) => void;
 	raid: (event: Raid.Event) => void;
 	sub: (event: Subscription.Event) => void;
+	combos: (event: Combos.Event) => void;
 	badgeUpgrade: (event: Message.EventBadgeUpgrade) => void;
 	sharedChatNotice: (event: SharedChatNotice.Event) => void;
 	join: (event: { channel: Channel; }) => void;
@@ -645,6 +646,57 @@ export class Client extends EventEmitter<ClientEvents> {
 						plan: tags.msgParamSubPlan,
 						tier: getTier(tags.msgParamSubPlan),
 						isPrime: false
+					},
+					tags
+				});
+				break;
+			}
+			case 'onetapstreakstarted': {
+				this.emit('combos', {
+					type: 'started',
+					channel,
+					timestamp: tags.tmiSentTs,
+					theme: tags.msgParamGiftId,
+					streak: {
+						msRemaining: tags.msgParamMsRemaining,
+					},
+					tags
+				});
+				break;
+			}
+			case 'onetapstreakexpired': {
+				const topContributors: Combos.EventExpired['topContributors'] = [];
+				const addContributor = (display?: string, taps?: number) => {
+					if(display && taps) {
+						topContributors.push({ display, taps });
+					}
+				};
+				addContributor(tags.msgParamContributor1, tags.msgParamContributor1Taps);
+				addContributor(tags.msgParamContributor2, tags.msgParamContributor2Taps);
+				addContributor(tags.msgParamContributor3, tags.msgParamContributor3Taps);
+				this.emit('combos', {
+					type: 'expired',
+					channel,
+					timestamp: tags.tmiSentTs,
+					theme: tags.msgParamGiftId,
+					streak: {
+						bits: tags.msgParamStreakSizeBits,
+						taps: tags.msgParamStreakSizeTaps,
+					},
+					topContributors,
+					tags
+				});
+				break;
+			}
+			case 'onetapbreakpointachieved': {
+				this.emit('combos', {
+					type: 'breakpointAchieved',
+					channel,
+					timestamp: tags.tmiSentTs,
+					theme: tags.msgParamGiftId,
+					threshold: {
+						level: tags.msgParamBreakpointNumber,
+						bits: tags.msgParamBreakpointThresholdBits,
 					},
 					tags
 				});

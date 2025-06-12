@@ -379,6 +379,45 @@ export namespace Moderation {
 		| EventDeleteMessage;
 }
 
+export namespace Combos {
+	export interface EventBase<Type> {
+		type: Type;
+		/** `'heart' | 'awww' | 'dino'` */
+		theme: string;
+		channel: Channel;
+		timestamp: TagType.tmiSentTs;
+	}
+	export interface EventStarted extends EventBase<'started'> {
+		streak: {
+			msRemaining: number;
+		};
+		tags: USERNOTICE.TagsOneTapStreakStarted;
+	}
+	export interface ComboContributor {
+		display: string;
+		taps: number;
+	}
+	export interface EventExpired extends EventBase<'expired'> {
+		topContributors: ComboContributor[];
+		streak: {
+			bits: number;
+			taps: number;
+		};
+		tags: USERNOTICE.TagsOneTapStreakExpired;
+	}
+	export interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
+		threshold: {
+			level: number;
+			bits: number;
+		};
+		tags: USERNOTICE.TagsOneTapBreakpointAchieved;
+	}
+	export type Event =
+		| EventStarted
+		| EventExpired
+		| EventBreakpointAchieved;
+}
+
 export namespace Raid {
 	export type Tags = USERNOTICE.TagsRaid;
 	export interface Event {
