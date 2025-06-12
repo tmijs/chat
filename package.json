@@ -36,8 +36,8 @@
     "tsc-w": "tsc -w"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
-    "esbuild": "^0.25.2",
+    "@types/node": "^22.15.31",
+    "esbuild": "^0.25.5",
     "typescript": "^5.8.3"
   },
   "dependencies": {
