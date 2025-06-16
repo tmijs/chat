@@ -643,7 +643,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamContributor1Taps':
 		case 'msgParamContributor2Taps':
 		case 'msgParamContributor3Taps':
-		case 'msgParamCopoReward':
+		case 'msgParamCopoReward': // "msg-param-copoReward"
 		case 'msgParamCumulativeMonths':
 		case 'msgParamGiftMatchBonusCount':
 		case 'msgParamGiftMatchExtraCount':
@@ -664,7 +664,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamStreakSizeTaps':
 		case 'msgParamThreshold':
 		case 'msgParamValue':
-		case 'msgParamViewerCount':
+		case 'msgParamViewerCount': // "msg-param-viewerCount"
 		case 'sentTs':
 		case 'slow':
 		case 'tmiSentTs':
@@ -787,7 +787,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamContributor1':
 		case 'msgParamContributor2':
 		case 'msgParamContributor3':
-		case 'msgParamDisplayName':
+		case 'msgParamDisplayName': // "msg-param-displayName"
 		case 'msgParamFunString':
 		case 'msgParamGiftId':
 		case 'msgParamGiftMatch':
@@ -832,7 +832,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'userType': {
 			return [ key, value ];
 		}
-		case 'msgParamProfileImageURL': {
+		case 'msgParamProfileImageURL': { // "msg-param-profileImageURL"
 			return [ 'msgParamProfileImageUrl', value ];
 		}
 	}
