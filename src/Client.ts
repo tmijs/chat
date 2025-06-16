@@ -4,7 +4,7 @@ import type { Emote } from './types';
 import EventEmitter from './lib/EventEmitter';
 import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos } from './twitch/events';
+import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 
 const ACTION_MESSAGE_PREFIX = '\u0001ACTION ';
@@ -69,6 +69,7 @@ export type ChatEvents = {
 	sub: Subscription.Event;
 	combos: Combos.Event;
 	badgeUpgrade: Message.EventBadgeUpgrade;
+	viewerMilestone: ViewerMilestone.Event;
 	sharedChatNotice: SharedChatNotice.Event;
 	join: { channel: Channel; };
 	part: { channel: Channel; };
@@ -102,7 +103,7 @@ type ToTuples<T extends Record<string, any>> = {
 	[K in keyof T]: T[K] extends any[] ? T[K] : T[K] extends void ? [] : [ event: T[K] ];
 };
 
-export class Client extends EventEmitter<ClientEvents> {
+export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	socket?: WebSocket = undefined;
 	readonly keepalive: Keepalive = {
 		maxWaitTimeoutMs: 15_000,
@@ -735,6 +736,20 @@ export class Client extends EventEmitter<ClientEvents> {
 						isAction: false,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
+				});
+				break;
+			}
+			case 'viewermilestone': {
+				this.emit('viewerMilestone', {
+					channel,
+					user,
+					type: tags.msgParamCategory,
+					milestone: {
+						id: tags.msgParamId,
+						value: tags.msgParamValue,
+						reward: tags.msgParamCopoReward
+					},
+					tags,
 				});
 				break;
 			}

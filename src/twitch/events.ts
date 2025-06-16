@@ -428,6 +428,22 @@ export namespace Raid {
 	}
 }
 
+export namespace ViewerMilestone {
+	interface BaseEvent {
+		channel: Channel;
+		user: UserExtra;
+	}
+	export interface Event extends BaseEvent {
+		type: TagType.msgParamCategory;
+		milestone: {
+			id: TagType.msgParamId;
+			value: TagType.msgParamValue;
+			reward: TagType.msgParamCopoReward;
+		};
+		tags: USERNOTICE.TagsViewerMilestone;
+	}
+}
+
 export namespace SharedChatNotice {
 	export type Tags = USERNOTICE.TagsSharedChatNotice;
 	export interface EventBase<Type> {

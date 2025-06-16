@@ -378,6 +378,15 @@ export namespace USERNOTICE {
 	export interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
 		msgParamThreshold: TagType.msgParamThreshold;
 	}
+	/**
+	 * @example `{string} watched {number} consecutive streams this month and sparked a watch streak!`
+	 */
+	export interface TagsViewerMilestone extends BaseTags<'viewermilestone'> {
+		msgParamCategory: TagType.msgParamCategory;
+		msgParamCopoReward: TagType.msgParamCopoReward;
+		msgParamId: TagType.msgParamId;
+		msgParamValue: TagType.msgParamValue;
+	}
 	export interface TagsSharedChatNotice extends BaseTags<'sharedchatnotice'> {
 		sourceBadgeInfo: BadgeInfo;
 		sourceBadges: Badges;
@@ -401,6 +410,7 @@ export namespace USERNOTICE {
 		| TagsOneTapStreakExpired
 		| TagsOneTapBreakpointAchieved
 		| TagsBitsBadgeTier
+		| TagsViewerMilestone
 		| TagsSharedChatNotice;
 	export type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [ message: string ]>;
 }
