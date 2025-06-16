@@ -36,17 +36,17 @@ export interface ClientOptions {
 	token: TokenValue;
 }
 
-type ConnectionEvents = {
-	connect: () => void;
-	close: (event: { reason: string; code: number; wasCloseCalled: boolean; }) => void;
-	socketError: (event: Event) => void;
-	reconnecting: (event: { attempts: number; waitTime: number; }) => void;
-	pong: () => void;
+export type ConnectionEvents = {
+	connect: void;
+	close: { reason: string; code: number; wasCloseCalled: boolean; };
+	socketError: Event;
+	reconnecting: { attempts: number; waitTime: number; };
+	pong: void;
 };
 
-type OtherEvents = {
-	ircMessage: (ircMessage: IrcMessage) => void;
-	error: (error: Error) => void;
+export type OtherEvents = {
+	ircMessage: [ ircMessage: IrcMessage ];
+	error: [ error: Error ];
 };
 
 namespace MessageDropped {
@@ -57,21 +57,21 @@ namespace MessageDropped {
 	}
 }
 
-type ChatEvents = {
-	message: (event: Message.Event) => void;
-	messageDropped: (event: MessageDropped.Event) => void;
-	whisper: (event: Whisper.Event) => void;
-	globalUserState: (event: GlobalUserState.Event) => void;
-	userState: (event: UserState.Event) => void;
-	roomState: (event: RoomState.Event) => void;
-	moderation: (event: Moderation.Event) => void;
-	raid: (event: Raid.Event) => void;
-	sub: (event: Subscription.Event) => void;
-	combos: (event: Combos.Event) => void;
-	badgeUpgrade: (event: Message.EventBadgeUpgrade) => void;
-	sharedChatNotice: (event: SharedChatNotice.Event) => void;
-	join: (event: { channel: Channel; }) => void;
-	part: (event: { channel: Channel; }) => void;
+export type ChatEvents = {
+	message: Message.Event;
+	messageDropped: MessageDropped.Event;
+	whisper: Whisper.Event;
+	globalUserState: GlobalUserState.Event;
+	userState: UserState.Event;
+	roomState: RoomState.Event;
+	moderation: Moderation.Event;
+	raid: Raid.Event;
+	sub: Subscription.Event;
+	combos: Combos.Event;
+	badgeUpgrade: Message.EventBadgeUpgrade;
+	sharedChatNotice: SharedChatNotice.Event;
+	join: { channel: Channel; };
+	part: { channel: Channel; };
 };
 
 export type ClientEvents = ConnectionEvents & OtherEvents & ChatEvents;
@@ -97,6 +97,10 @@ interface Keepalive {
 	/** The amount of reconnect attempts. */
 	reconnectAttempts: number;
 }
+
+type ToTuples<T extends Record<string, any>> = {
+	[K in keyof T]: T[K] extends any[] ? T[K] : T[K] extends void ? [] : [ event: T[K] ];
+};
 
 export class Client extends EventEmitter<ClientEvents> {
 	socket?: WebSocket = undefined;

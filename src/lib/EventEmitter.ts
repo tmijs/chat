@@ -1,21 +1,21 @@
-type EventList = {
-	[key: string]: (...args: any[]) => void;
+type EventMap = {
+	[key: string]: any[];
 };
 
-export default class EventEmitter<Events extends EventList> {
-	private listeners: Map<keyof Events, Set<Events[keyof Events]>> = new Map();
-	on<K extends keyof Events>(event: K, listener: Events[K]) {
+export default class EventEmitter<Events extends EventMap> {
+	private listeners: Map<keyof Events, Set<(...args: Events[keyof Events]) => void>> = new Map();
+	on<K extends keyof Events>(event: K, listener: (...args: Events[K]) => void) {
 		if(!this.listeners.has(event)) {
 			this.listeners.set(event, new Set());
 		}
-		this.listeners.get(event)!.add(listener);
+		this.listeners.get(event)!.add(listener as (...args: Events[keyof Events]) => void);
 		return this;
 	}
-	off<K extends keyof Events>(event: K, listener: Events[K]) {
-		this.listeners.get(event)?.delete(listener);
+	off<K extends keyof Events>(event: K, listener: (...args: Events[K]) => void) {
+		this.listeners.get(event)?.delete(listener as (...args: Events[keyof Events]) => void);
 		return this;
 	}
-	emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>) {
+	emit<K extends keyof Events>(event: K, ...args: Events[K]) {
 		if(!this.listeners.has(event)) {
 			if(event === 'error') {
 				if(args[0] instanceof Error) {
