@@ -4,7 +4,7 @@ import type { Emote } from './types';
 import EventEmitter from './lib/EventEmitter';
 import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone } from './twitch/events';
+import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone, Unraid } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 
 const ACTION_MESSAGE_PREFIX = '\u0001ACTION ';
@@ -66,6 +66,7 @@ export type ChatEvents = {
 	roomState: RoomState.Event;
 	moderation: Moderation.Event;
 	raid: Raid.Event;
+	unraid: Unraid.Event;
 	sub: Subscription.Event;
 	combos: Combos.Event;
 	badgeUpgrade: Message.EventBadgeUpgrade;
@@ -717,6 +718,13 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						// isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
 					},
 					viewers: tags.msgParamViewerCount,
+					tags
+				});
+				break;
+			}
+			case 'unraid': {
+				this.emit('unraid', {
+					channel,
 					tags
 				});
 				break;

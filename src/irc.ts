@@ -175,6 +175,11 @@ export namespace USERNOTICE {
 		msgParamProfileImageUrl: TagType.msgParamProfileImageUrl;
 		msgParamViewerCount: TagType.msgParamViewerCount;
 	}
+	/**
+	 * @example `The raid has been canceled.`
+	 */
+	export interface TagsUnraid extends BaseTags<'unraid'> {
+	}
 	interface BaseTags_Goal {
 		msgParamGoalContributionType: GoalContributionType;
 		msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
@@ -398,6 +403,7 @@ export namespace USERNOTICE {
 	export type Tags =
 		| TagsAnnouncement
 		| TagsRaid
+		| TagsUnraid
 		| TagsSub
 		| TagsResub
 		| TagsSubGift

@@ -428,6 +428,13 @@ export namespace Raid {
 	}
 }
 
+export namespace Unraid {
+	export interface Event {
+		channel: Channel;
+		tags: USERNOTICE.TagsUnraid;
+	}
+}
+
 export namespace ViewerMilestone {
 	interface BaseEvent {
 		channel: Channel;
