@@ -361,7 +361,7 @@ export namespace USERNOTICE {
 		msgParamContributor2?: TagType.msgParamContributor2;
 		msgParamContributor3Taps?: TagType.msgParamContributor3Taps;
 		msgParamContributor3?: TagType.msgParamContributor3;
-		/** `'heart' | 'awww' | 'dino'` */
+		/** `'heart' | 'awww' | 'dino' | 'horselul'` */
 		msgParamGiftId: TagType.msgParamGiftId;
 		/** `1 | 2 | 3` */
 		msgParamLargestContributorCount: TagType.msgParamLargestContributorCount;
@@ -374,7 +374,7 @@ export namespace USERNOTICE {
 	export interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
 		msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
 		msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
-		/** `'heart' | 'awww' | 'dino'` */
+		/** `'heart' | 'awww' | 'dino' | 'horselul'` */
 		msgParamGiftId: TagType.msgParamGiftId;
 	}
 	/**

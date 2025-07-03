@@ -382,7 +382,7 @@ export namespace Moderation {
 export namespace Combos {
 	export interface EventBase<Type> {
 		type: Type;
-		/** `'heart' | 'awww' | 'dino'` */
+		/** `'heart' | 'awww' | 'dino' | 'horselul'` */
 		theme: string;
 		channel: Channel;
 		timestamp: TagType.tmiSentTs;
