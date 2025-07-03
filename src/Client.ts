@@ -1084,6 +1084,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				);
 				reject(err);
 			}, timeoutMs);
+			timeout.unref?.();
 			this.on('ircMessage', commandListener);
 			if(failOnDrop) {
 				this.on('messageDropped', dropListener);
