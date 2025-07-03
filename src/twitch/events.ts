@@ -419,12 +419,11 @@ export namespace Combos {
 }
 
 export namespace Raid {
-	export type Tags = USERNOTICE.TagsRaid;
 	export interface Event {
 		channel: Channel;
 		user: User;
 		viewers: number;
-		tags: Tags;
+		tags: USERNOTICE.TagsRaid;
 	}
 }
 
@@ -452,20 +451,18 @@ export namespace ViewerMilestone {
 }
 
 export namespace SharedChatNotice {
-	export type Tags = USERNOTICE.TagsSharedChatNotice;
 	export interface EventBase<Type> {
 		type: Type;
 		channel: Channel;
 		timestamp: TagType.tmiSentTs;
 		sharedChat: SharedChatTags;
-		tags: Tags;
+		tags: USERNOTICE.TagsSharedChatNotice;
 	}
 	export type Event =
 		| EventBase<string>;
 }
 
 export namespace RoomState {
-	export type Tags = ROOMSTATE.Tags;
 	export interface Event {
 		channel: Channel;
 		emoteOnly?: TagType.emoteOnly;
