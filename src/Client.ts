@@ -53,6 +53,7 @@ namespace MessageDropped {
 	export interface Event {
 		channel: Channel;
 		reason: string;
+		systemMessage: string;
 		tags: irc.NOTICE.Tags;
 	}
 }
@@ -824,6 +825,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				this.emit('messageDropped', {
 					channel,
 					reason: msgId,
+					systemMessage: params[0] ?? '',
 					tags
 				});
 				break;
