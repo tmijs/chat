@@ -2,55 +2,59 @@ import type { IrcMessage, FormatMessage } from '@tmi.js/irc-parser';
 import EventEmitter from './lib/EventEmitter';
 import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState } from './twitch/events';
+import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone, Unraid } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 export interface ClientOptions {
     channels: string[];
     token: TokenValue;
 }
-type ConnectionEvents = {
-    connect: () => void;
-    close: (event: {
+export type ConnectionEvents = {
+    connect: void;
+    close: {
         reason: string;
         code: number;
         wasCloseCalled: boolean;
-    }) => void;
-    socketError: (event: Event) => void;
-    reconnecting: (event: {
+    };
+    socketError: Event;
+    reconnecting: {
         attempts: number;
         waitTime: number;
-    }) => void;
-    pong: () => void;
+    };
+    pong: void;
 };
-type OtherEvents = {
-    ircMessage: (ircMessage: IrcMessage) => void;
-    error: (error: Error) => void;
+export type OtherEvents = {
+    ircMessage: [ircMessage: IrcMessage];
+    error: [error: Error];
 };
 declare namespace MessageDropped {
     interface Event {
         channel: Channel;
         reason: string;
+        systemMessage: string;
         tags: irc.NOTICE.Tags;
     }
 }
-type ChatEvents = {
-    message: (event: Message.Event) => void;
-    messageDropped: (event: MessageDropped.Event) => void;
-    whisper: (event: Whisper.Event) => void;
-    globalUserState: (event: GlobalUserState.Event) => void;
-    userState: (event: UserState.Event) => void;
-    roomState: (event: RoomState.Event) => void;
-    moderation: (event: Moderation.Event) => void;
-    raid: (event: Raid.Event) => void;
-    sub: (event: Subscription.Event) => void;
-    badgeUpgrade: (event: Message.EventBadgeUpgrade) => void;
-    sharedChatNotice: (event: SharedChatNotice.Event) => void;
-    join: (event: {
+export type ChatEvents = {
+    message: Message.Event;
+    messageDropped: MessageDropped.Event;
+    whisper: Whisper.Event;
+    globalUserState: GlobalUserState.Event;
+    userState: UserState.Event;
+    roomState: RoomState.Event;
+    moderation: Moderation.Event;
+    raid: Raid.Event;
+    unraid: Unraid.Event;
+    sub: Subscription.Event;
+    combos: Combos.Event;
+    badgeUpgrade: Message.EventBadgeUpgrade;
+    viewerMilestone: ViewerMilestone.Event;
+    sharedChatNotice: SharedChatNotice.Event;
+    join: {
         channel: Channel;
-    }) => void;
-    part: (event: {
+    };
+    part: {
         channel: Channel;
-    }) => void;
+    };
 };
 export type ClientEvents = ConnectionEvents & OtherEvents & ChatEvents;
 interface Keepalive {
@@ -74,7 +78,10 @@ interface Keepalive {
     /** The amount of reconnect attempts. */
     reconnectAttempts: number;
 }
-export declare class Client extends EventEmitter<ClientEvents> {
+type ToTuples<T extends Record<string, any>> = {
+    [K in keyof T]: T[K] extends any[] ? T[K] : T[K] extends void ? [] : [event: T[K]];
+};
+export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     socket?: WebSocket;
     readonly keepalive: Keepalive;
     channelsPendingJoin: Set<string>;

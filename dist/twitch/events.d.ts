@@ -316,28 +316,82 @@ export declare namespace Moderation {
     }
     type Event = EventClearChat | EventTimeout | EventBan | EventDeleteMessage;
 }
+export declare namespace Combos {
+    interface EventBase<Type> {
+        type: Type;
+        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        theme: string;
+        channel: Channel;
+        timestamp: TagType.tmiSentTs;
+    }
+    interface EventStarted extends EventBase<'started'> {
+        streak: {
+            msRemaining: number;
+        };
+        tags: USERNOTICE.TagsOneTapStreakStarted;
+    }
+    interface ComboContributor {
+        display: string;
+        taps: number;
+    }
+    interface EventExpired extends EventBase<'expired'> {
+        topContributors: ComboContributor[];
+        streak: {
+            bits: number;
+            taps: number;
+        };
+        tags: USERNOTICE.TagsOneTapStreakExpired;
+    }
+    interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
+        threshold: {
+            level: number;
+            bits: number;
+        };
+        tags: USERNOTICE.TagsOneTapBreakpointAchieved;
+    }
+    type Event = EventStarted | EventExpired | EventBreakpointAchieved;
+}
 export declare namespace Raid {
-    type Tags = USERNOTICE.TagsRaid;
     interface Event {
         channel: Channel;
         user: User;
         viewers: number;
-        tags: Tags;
+        tags: USERNOTICE.TagsRaid;
     }
 }
+export declare namespace Unraid {
+    interface Event {
+        channel: Channel;
+        tags: USERNOTICE.TagsUnraid;
+    }
+}
+export declare namespace ViewerMilestone {
+    interface BaseEvent {
+        channel: Channel;
+        user: UserExtra;
+    }
+    export interface Event extends BaseEvent {
+        type: TagType.msgParamCategory;
+        milestone: {
+            id: TagType.msgParamId;
+            value: TagType.msgParamValue;
+            reward: TagType.msgParamCopoReward;
+        };
+        tags: USERNOTICE.TagsViewerMilestone;
+    }
+    export {};
+}
 export declare namespace SharedChatNotice {
-    type Tags = USERNOTICE.TagsSharedChatNotice;
     interface EventBase<Type> {
         type: Type;
         channel: Channel;
         timestamp: TagType.tmiSentTs;
         sharedChat: SharedChatTags;
-        tags: Tags;
+        tags: USERNOTICE.TagsSharedChatNotice;
     }
     type Event = EventBase<string>;
 }
 export declare namespace RoomState {
-    type Tags = ROOMSTATE.Tags;
     interface Event {
         channel: Channel;
         emoteOnly?: TagType.emoteOnly;

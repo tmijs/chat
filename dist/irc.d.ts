@@ -140,6 +140,11 @@ export declare namespace USERNOTICE {
         msgParamProfileImageUrl: TagType.msgParamProfileImageUrl;
         msgParamViewerCount: TagType.msgParamViewerCount;
     }
+    /**
+     * @example `The raid has been canceled.`
+     */
+    export interface TagsUnraid extends BaseTags<'unraid'> {
+    }
     interface BaseTags_Goal {
         msgParamGoalContributionType: GoalContributionType;
         msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
@@ -304,10 +309,53 @@ export declare namespace USERNOTICE {
         msgParamSubPlan: Exclude<SubPlanTierString, 'Prime'>;
     }
     /**
+     * @example `Combo started! You have ${number}s left to join.`
+     */
+    export interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
+        msgParamGiftId: TagType.msgParamGiftId;
+        msgParamMsRemaining: TagType.msgParamMsRemaining;
+    }
+    /**
+     * @example `{string}'s community sent ${number}!`
+     */
+    export interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
+        msgParamChannelDisplayName: TagType.msgParamChannelDisplayName;
+        msgParamContributor1Taps: TagType.msgParamContributor1Taps;
+        msgParamContributor1: TagType.msgParamContributor1;
+        msgParamContributor2Taps?: TagType.msgParamContributor2Taps;
+        msgParamContributor2?: TagType.msgParamContributor2;
+        msgParamContributor3Taps?: TagType.msgParamContributor3Taps;
+        msgParamContributor3?: TagType.msgParamContributor3;
+        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        msgParamGiftId: TagType.msgParamGiftId;
+        /** `1 | 2 | 3` */
+        msgParamLargestContributorCount: TagType.msgParamLargestContributorCount;
+        msgParamStreakSizeBits: TagType.msgParamStreakSizeBits;
+        msgParamStreakSizeTaps: TagType.msgParamStreakSizeTaps;
+    }
+    /**
+     * @example `Milestone ${number} achieved!`
+     */
+    export interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
+        msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
+        msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
+        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        msgParamGiftId: TagType.msgParamGiftId;
+    }
+    /**
      * @example `bits badge tier notification`
      */
     export interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
         msgParamThreshold: TagType.msgParamThreshold;
+    }
+    /**
+     * @example `{string} watched {number} consecutive streams this month and sparked a watch streak!`
+     */
+    export interface TagsViewerMilestone extends BaseTags<'viewermilestone'> {
+        msgParamCategory: TagType.msgParamCategory;
+        msgParamCopoReward: TagType.msgParamCopoReward;
+        msgParamId: TagType.msgParamId;
+        msgParamValue: TagType.msgParamValue;
     }
     export interface TagsSharedChatNotice extends BaseTags<'sharedchatnotice'> {
         sourceBadgeInfo: BadgeInfo;
@@ -317,7 +365,7 @@ export declare namespace USERNOTICE {
         sourceOnly: TagType.sourceOnly;
         sourceRoomId: TagType.sourceRoomId;
     }
-    export type Tags = TagsAnnouncement | TagsRaid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsBitsBadgeTier | TagsSharedChatNotice;
+    export type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsViewerMilestone | TagsSharedChatNotice;
     export type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [message: string]>;
     export {};
 }
@@ -403,6 +451,11 @@ export declare namespace WHISPER {
 export declare namespace TagType {
     type banDuration = number;
     type bits = number;
+    type msgParamBreakpointNumber = number;
+    type msgParamBreakpointThresholdBits = number;
+    type msgParamContributor1Taps = number;
+    type msgParamContributor2Taps = number;
+    type msgParamContributor3Taps = number;
     type msgParamCopoReward = number;
     type msgParamCumulativeMonths = number;
     type msgParamGiftMonthBeingRedeemed = number;
@@ -410,12 +463,16 @@ export declare namespace TagType {
     type msgParamGoalCurrentContributions = number;
     type msgParamGoalTargetContributions = number;
     type msgParamGoalUserContributions = number;
+    type msgParamLargestContributorCount = number;
     type msgParamMassGiftCount = number;
     type msgParamMonths = number;
+    type msgParamMsRemaining = number;
     type msgParamMultimonthDuration = number;
     type msgParamMultimonthTenure = number;
     type msgParamSenderCount = number;
     type msgParamStreakMonths = number;
+    type msgParamStreakSizeBits = number;
+    type msgParamStreakSizeTaps = number;
     type msgParamThreshold = number;
     type msgParamValue = number;
     type msgParamViewerCount = number;
@@ -456,10 +513,15 @@ export declare namespace TagType {
     type messageId = string;
     type msgId = string;
     type msgParamCategory = string;
+    type msgParamChannelDisplayName = string;
     type msgParamColor = string;
     type msgParamCommunityGiftId = string;
+    type msgParamContributor1 = string;
+    type msgParamContributor2 = string;
+    type msgParamContributor3 = string;
     type msgParamDisplayName = string;
     type msgParamFunString = string;
+    type msgParamGiftId = string;
     type msgParamGiftMatch = string;
     type msgParamGiftMatchBonusCount = number;
     type msgParamGiftMatchExtraCount = number;

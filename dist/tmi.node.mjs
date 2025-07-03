@@ -39,7 +39,13 @@ function parseTag(key, value, params) {
     // Integer
     case "banDuration":
     case "bits":
+    case "msgParamBreakpointNumber":
+    case "msgParamBreakpointThresholdBits":
+    case "msgParamContributor1Taps":
+    case "msgParamContributor2Taps":
+    case "msgParamContributor3Taps":
     case "msgParamCopoReward":
+    // "msg-param-copoReward"
     case "msgParamCumulativeMonths":
     case "msgParamGiftMatchBonusCount":
     case "msgParamGiftMatchExtraCount":
@@ -48,15 +54,20 @@ function parseTag(key, value, params) {
     case "msgParamGoalCurrentContributions":
     case "msgParamGoalTargetContributions":
     case "msgParamGoalUserContributions":
+    case "msgParamLargestContributorCount":
     case "msgParamMassGiftCount":
     case "msgParamMonths":
+    case "msgParamMsRemaining":
     case "msgParamMultimonthDuration":
     case "msgParamMultimonthTenure":
     case "msgParamSenderCount":
     case "msgParamStreakMonths":
+    case "msgParamStreakSizeBits":
+    case "msgParamStreakSizeTaps":
     case "msgParamThreshold":
     case "msgParamValue":
     case "msgParamViewerCount":
+    // "msg-param-viewerCount"
     case "sentTs":
     case "slow":
     case "tmiSentTs":
@@ -135,10 +146,16 @@ function parseTag(key, value, params) {
     case "messageId":
     case "msgId":
     case "msgParamCategory":
+    case "msgParamChannelDisplayName":
     case "msgParamColor":
     case "msgParamCommunityGiftId":
+    case "msgParamContributor1":
+    case "msgParamContributor2":
+    case "msgParamContributor3":
     case "msgParamDisplayName":
+    // "msg-param-displayName"
     case "msgParamFunString":
+    case "msgParamGiftId":
     case "msgParamGiftMatch":
     case "msgParamGiftMatchGifterDisplayName":
     case "msgParamGiftTheme":
@@ -316,7 +333,7 @@ var Client = class extends EventEmitter {
 `).forEach((line) => this.onIrcLine(line));
   }
   onSocketClose(event) {
-    this.emit("close", {
+    clearInterval(this.keepalive.pingInterval), clearTimeout(this.keepalive.pingTimeout), this.emit("close", {
       reason: event.reason,
       code: event.code,
       wasCloseCalled: this.wasCloseCalled
@@ -743,6 +760,51 @@ var Client = class extends EventEmitter {
         });
         break;
       }
+      case "onetapstreakstarted": {
+        this.emit("combos", {
+          type: "started",
+          channel,
+          timestamp: tags.tmiSentTs,
+          theme: tags.msgParamGiftId,
+          streak: {
+            msRemaining: tags.msgParamMsRemaining
+          },
+          tags
+        });
+        break;
+      }
+      case "onetapstreakexpired": {
+        let topContributors = [], addContributor = (display, taps) => {
+          display && taps && topContributors.push({ display, taps });
+        };
+        addContributor(tags.msgParamContributor1, tags.msgParamContributor1Taps), addContributor(tags.msgParamContributor2, tags.msgParamContributor2Taps), addContributor(tags.msgParamContributor3, tags.msgParamContributor3Taps), this.emit("combos", {
+          type: "expired",
+          channel,
+          timestamp: tags.tmiSentTs,
+          theme: tags.msgParamGiftId,
+          streak: {
+            bits: tags.msgParamStreakSizeBits,
+            taps: tags.msgParamStreakSizeTaps
+          },
+          topContributors,
+          tags
+        });
+        break;
+      }
+      case "onetapbreakpointachieved": {
+        this.emit("combos", {
+          type: "breakpointAchieved",
+          channel,
+          timestamp: tags.tmiSentTs,
+          theme: tags.msgParamGiftId,
+          threshold: {
+            level: tags.msgParamBreakpointNumber,
+            bits: tags.msgParamBreakpointThresholdBits
+          },
+          tags
+        });
+        break;
+      }
       case "raid": {
         this.emit("raid", {
           channel,
@@ -753,6 +815,13 @@ var Client = class extends EventEmitter {
             // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
           },
           viewers: tags.msgParamViewerCount,
+          tags
+        });
+        break;
+      }
+      case "unraid": {
+        this.emit("unraid", {
+          channel,
           tags
         });
         break;
@@ -772,6 +841,20 @@ var Client = class extends EventEmitter {
             isAction: !1,
             isFirst: "firstMsg" in tags && tags.firstMsg === !0
           }
+        });
+        break;
+      }
+      case "viewermilestone": {
+        this.emit("viewerMilestone", {
+          channel,
+          user,
+          type: tags.msgParamCategory,
+          milestone: {
+            id: tags.msgParamId,
+            value: tags.msgParamValue,
+            reward: tags.msgParamCopoReward
+          },
+          tags
         });
         break;
       }
@@ -828,10 +911,13 @@ var Client = class extends EventEmitter {
         break;
       // Messages that mean a sent message was dropped
       case "msg_channel_suspended":
+      case "msg_duplicate":
+      case "msg_timedout":
       case "unrecognized_cmd":
         this.emit("messageDropped", {
           channel,
           reason: msgId,
+          systemMessage: params[0] ?? "",
           tags
         });
         break;
@@ -871,7 +957,7 @@ var Client = class extends EventEmitter {
       type: "deleteMessage",
       channel,
       user: {
-        login: params[0]
+        login: tags.login
       },
       message: {
         id: tags.targetMsgId,
@@ -1020,7 +1106,7 @@ var Client = class extends EventEmitter {
         );
         reject(err);
       }, timeoutMs);
-      this.on("ircMessage", commandListener), failOnDrop && this.on("messageDropped", dropListener);
+      timeout.unref?.(), this.on("ircMessage", commandListener), failOnDrop && this.on("messageDropped", dropListener);
     });
   }
 };
@@ -1031,6 +1117,8 @@ var src_default = {
   parseTag
 };
 export {
+  Channel,
+  ChannelPlaceholder,
   Client,
   src_default as default,
   parseTag
