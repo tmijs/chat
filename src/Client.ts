@@ -873,7 +873,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			type: 'deleteMessage',
 			channel,
 			user: {
-				login: params[0]!
+				login: tags.login,
 			},
 			message: {
 				id: tags.targetMsgId,
