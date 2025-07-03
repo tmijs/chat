@@ -820,8 +820,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 
 			// Messages that mean a sent message was dropped
 			case 'msg_channel_suspended':
-			case 'unrecognized_cmd':
 			case 'msg_duplicate':
+			case 'msg_timedout':
+			case 'unrecognized_cmd':
 				this.emit('messageDropped', {
 					channel,
 					reason: msgId,
