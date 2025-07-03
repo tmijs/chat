@@ -161,6 +161,8 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		event.data.trim().split('\r\n').forEach(line => this.onIrcLine(line));
 	}
 	private onSocketClose(event: CloseEvent) {
+		clearInterval(this.keepalive.pingInterval);
+		clearTimeout(this.keepalive.pingTimeout);
 		this.emit('close', {
 			reason: event.reason,
 			code: event.code,
