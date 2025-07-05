@@ -144,11 +144,13 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	close() {
 		this.wasCloseCalled = true;
 		if(this.isConnected()) {
-			this.socket?.close();
+			this.socket.close();
 		}
 	}
 	async reconnect() {
-		this.close();
+		if(this.isConnected()) {
+			this.socket.close();
+		}
 		const reconnectWaitTime = Math.min(1000 * 1.23 ** this.keepalive.reconnectAttempts++, 60000);
 		this.emit('reconnecting', {
 			attempts: this.keepalive.reconnectAttempts,
