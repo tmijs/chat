@@ -165,6 +165,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	private onSocketClose(event: CloseEvent) {
 		clearInterval(this.keepalive.pingInterval);
 		clearTimeout(this.keepalive.pingTimeout);
+		if(!this.wasCloseCalled) {
+			this.reconnect();
+		}
 		this.emit('close', {
 			reason: event.reason,
 			code: event.code,
