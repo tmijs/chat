@@ -413,6 +413,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			isVip: tags.badges.has('vip'),
 			type: tags.userType,
 		};
+		channel.lastUserstate = {
+			user,
+		};
 		this.emit('userState', {
 			channel,
 			user,

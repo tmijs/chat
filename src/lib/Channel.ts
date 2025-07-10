@@ -13,7 +13,7 @@ export default class Channel {
 		return `#${Channel.toLogin(channelName)}`;
 	}
 
-	lastUserstate: UserState.Event | null = null;
+	lastUserstate: Omit<UserState.Event, 'channel'> | null = null;
 	constructor(private _id: string, private _login: string) {
 		this.id = _id;
 		this.login = _login;
