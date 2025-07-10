@@ -984,8 +984,8 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		const channel = typeof channelName === 'string' ? Channel.toIrc(channelName) : channelName.toString();
 		const responder = this.waitForCommand<irc.JOIN.IrcMessage | irc.USERSTATE.IrcMessage>(
 			this.identity.isAnonymous() ? 'JOIN' : 'USERSTATE',
-			m => m.channel === channel && (m.prefix.nick ? m.prefix.nick === this.identity.name : true),
-			{ channelHint: Channel.toIrc(channelName) }
+			m => m.prefix.nick ? m.prefix.nick === this.identity.name : true,
+			{ channelHint: channel }
 		);
 		this.sendIrc({ command: 'JOIN', channel });
 		await responder;
@@ -994,8 +994,8 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		const channel = typeof channelName === 'string' ? Channel.toIrc(channelName) : channelName.toString();
 		const responder = this.waitForCommand<irc.PART.IrcMessage>(
 			'PART',
-			m => m.channel === channel && m.prefix.nick === this.identity.name,
-			{ channelHint: Channel.toIrc(channelName) }
+			m => m.prefix.nick === this.identity.name,
+			{ channelHint: channel }
 		);
 		this.sendIrc({ command: 'PART', channel });
 		await responder;
@@ -1063,15 +1063,20 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		return new Promise<IrcMessage>((resolve, reject) => {
 			const failOnDrop = opts?.failOnDrop ?? true;
 			const timeoutMs = opts?.timeoutMs ?? Math.max(1000, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2));
+			const channelHint = opts?.channelHint;
 			const commandListener = (ircMessage: IrcMessage) => {
-				if(ircMessage.command === command && (!filterCallback || filterCallback(ircMessage as Command))) {
+				if(
+					ircMessage.command === command &&
+					(!channelHint || ircMessage.channel === channelHint) &&
+					(!filterCallback || filterCallback(ircMessage as Command))
+				) {
 					stop();
 					clearTimeout(timeout);
 					resolve(ircMessage);
 				}
 			};
 			const dropListener = (event: MessageDropped.Event) => {
-				if(opts?.channelHint && event.channel.toString() !== opts?.channelHint) {
+				if(channelHint && event.channel.toString() !== channelHint) {
 					return;
 				}
 				stop();
