@@ -318,10 +318,10 @@ var Client = class extends EventEmitter {
     this.socket = socket, socket.onmessage = (e) => this.onSocketMessage(e), socket.onclose = (e) => this.onSocketClose(e), socket.onopen = (e) => this.onSocketOpen(e), socket.onerror = (e) => this.onSocketError(e);
   }
   close() {
-    this.wasCloseCalled = !0, this.isConnected() && this.socket?.close();
+    this.wasCloseCalled = !0, this.isConnected() && this.socket.close();
   }
   async reconnect() {
-    this.close();
+    this.isConnected() && this.socket.close();
     let reconnectWaitTime = Math.min(1e3 * 1.23 ** this.keepalive.reconnectAttempts++, 6e4);
     this.emit("reconnecting", {
       attempts: this.keepalive.reconnectAttempts,
@@ -333,7 +333,7 @@ var Client = class extends EventEmitter {
 `).forEach((line) => this.onIrcLine(line));
   }
   onSocketClose(event) {
-    clearInterval(this.keepalive.pingInterval), clearTimeout(this.keepalive.pingTimeout), this.emit("close", {
+    clearInterval(this.keepalive.pingInterval), clearTimeout(this.keepalive.pingTimeout), this.wasCloseCalled || this.reconnect(), this.emit("close", {
       reason: event.reason,
       code: event.code,
       wasCloseCalled: this.wasCloseCalled
