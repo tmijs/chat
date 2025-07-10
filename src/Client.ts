@@ -225,8 +225,6 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				return this.handleCLEARMSG(ircMessage as any);
 			case 'ROOMSTATE':
 				return this.handleROOMSTATE(ircMessage as any);
-			case 'JOIN':
-				return this.handleJOIN(ircMessage as any);
 			case 'PART':
 				return this.handlePART(ircMessage as any);
 			case 'WHISPER':
@@ -237,6 +235,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				return this.handle376(ircMessage);
 			// Ignore these messages
 			case 'CAP':
+			case 'JOIN':
 			case '001':
 			case '002':
 			case '003':
@@ -901,6 +900,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			this.channels.add(channel);
 			this.channelsById.set(channel.id, channel);
 			this.channelsByLogin.set(channel.login, channel);
+			this.emit('join', { channel });
 		}
 		this.emit('roomState', {
 			channel,
@@ -911,12 +911,6 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			subsOnly: tags.subsOnly,
 			tags
 		});
-	}
-	private handleJOIN(ircMessage: irc.JOIN.IrcMessage) {
-		// TODO:
-		// Received when:
-		// - Client is anonymous
-		// - Membership is enabled
 	}
 	private handlePART({ channel: channelName }: irc.PART.IrcMessage) {
 		const channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(undefined, channelName);
