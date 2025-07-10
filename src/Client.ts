@@ -899,8 +899,8 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		if(!channel) {
 			channel = new Channel(tags.roomId, channelName);
 			this.channels.add(channel);
-			this.channelsById.set(tags.roomId, channel);
-			this.channelsByLogin.set(channelName, channel);
+			this.channelsById.set(channel.id, channel);
+			this.channelsByLogin.set(channel.login, channel);
 		}
 		this.emit('roomState', {
 			channel,
