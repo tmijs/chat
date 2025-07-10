@@ -1,14 +1,8 @@
-// @ts-check
-import { build } from 'esbuild';
+import { build, type BuildOptions } from 'esbuild';
 
 const entryFile = 'src/index.ts';
 
-/** @typedef {import('esbuild').BuildOptions} BuildOptions */
-
-/**
- * @type {BuildOptions}
- */
-const opts = {
+const opts: BuildOptions = {
 	bundle: true,
 	sourcemap: true,
 	sourcesContent: false,
@@ -20,46 +14,39 @@ const opts = {
 	// minifyIdentifiers: true,
 };
 
-/** @type {BuildOptions} */
-const node = {
+const node: BuildOptions = {
 	platform: 'node',
 	minifySyntax: true,
 	packages: 'external',
 };
 
-/** @type {BuildOptions} */
-const browser = {
+const browser: BuildOptions = {
 	platform: 'browser',
 	entryPoints: { 'tmi': entryFile },
 };
 
-/** @type {BuildOptions} */
-const esm = {
+const esm: BuildOptions = {
 	format: 'esm',
 	outExtension: { '.js': '.mjs' },
 };
 
-/** @type {BuildOptions} */
-const esm_min = {
+const esm_min: BuildOptions = {
 	...esm,
 	minify: true,
 };
 
-/** @type {BuildOptions} */
-const cjs = {
+const cjs: BuildOptions = {
 	format: 'cjs',
 	outExtension: { '.js': '.cjs' },
 };
 
-/** @type {BuildOptions} */
-const iife = {
+const iife: BuildOptions = {
 	format: 'iife',
 	globalName: 'tmi',
 	outExtension: { '.js': '.js' },
 };
 
-/** @type {BuildOptions} */
-const iife_min = {
+const iife_min: BuildOptions = {
 	...iife,
 	minify: true,
 };
