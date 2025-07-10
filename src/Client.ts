@@ -191,6 +191,12 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	getChannelByLogin(login: string) {
 		return this.channelsByLogin.get(Channel.toLogin(login));
 	}
+	removeChannel(channel: Channel) {
+		const successA = this.channels.delete(channel);
+		const successB = this.channelsById.delete(channel.id);
+		const successC = this.channelsByLogin.delete(channel.login);
+		return successA && successB && successC;
+	}
 	getChannelPlaceholder(id?: string, login?: string) {
 		const channel = new ChannelPlaceholder(id, login);
 		return channel;
@@ -914,6 +920,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	}
 	private handlePART({ channel: channelName }: irc.PART.IrcMessage) {
 		const channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(undefined, channelName);
+		this.removeChannel(channel);
 		this.emit('part', {
 			channel
 		});
