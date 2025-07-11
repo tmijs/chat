@@ -168,6 +168,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	private onSocketClose(event: CloseEvent) {
 		clearInterval(this.keepalive.pingInterval);
 		clearTimeout(this.keepalive.pingTimeout);
+		this.clearChannels();
 		if(!this.wasCloseCalled) {
 			this.reconnect();
 		}
@@ -194,11 +195,16 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	getChannelByLogin(login: string) {
 		return this.channelsByLogin.get(Channel.toLogin(login));
 	}
-	removeChannel(channel: Channel) {
+	private removeChannel(channel: Channel) {
 		const successA = this.channels.delete(channel);
 		const successB = this.channelsById.delete(channel.id);
 		const successC = this.channelsByLogin.delete(channel.login);
 		return successA && successB && successC;
+	}
+	private clearChannels() {
+		this.channels.clear();
+		this.channelsById.clear();
+		this.channelsByLogin.clear();
 	}
 	getChannelPlaceholder(id?: string, login?: string) {
 		const channel = new ChannelPlaceholder(id, login);
