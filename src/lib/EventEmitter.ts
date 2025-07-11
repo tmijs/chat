@@ -3,7 +3,7 @@ type EventMap = {
 };
 
 export default class EventEmitter<Events extends EventMap> {
-	private listeners: Map<keyof Events, Set<(...args: Events[keyof Events]) => void>> = new Map();
+	private listeners = new Map<keyof Events, Set<(...args: Events[keyof Events]) => void>>();
 	on<K extends keyof Events>(event: K, listener: (...args: Events[K]) => void) {
 		if(!this.listeners.has(event)) {
 			this.listeners.set(event, new Set());

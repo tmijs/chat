@@ -1,11 +1,14 @@
 import { format, parse } from '@tmi.js/irc-parser';
 import type { IrcMessage, FormatMessage, ChannelString } from '@tmi.js/irc-parser';
-import type { Emote } from './types';
 import EventEmitter from './lib/EventEmitter';
-import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone, Unraid } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
+import * as irc from './irc';
+import type {
+	Combos, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
+	SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper,
+} from './twitch/events';
+import type { Emote } from './types';
 
 const ACTION_MESSAGE_PREFIX = '\u0001ACTION ';
 const ACTION_MESSAGE_SUFFIX = '\u0001';
@@ -15,9 +18,9 @@ const ANONYMOUS_GIFTER_LOGIN = 'ananonymousgifter';
 function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 	return {
 		id: tags.userId,
+		color: tags.color,
 		// login: tags.login ?? prefix.nick,
 		display: tags.displayName,
-		color: tags.color,
 		badges: tags.badges,
 		badgeInfo: tags.badgeInfo,
 		isBroadcaster: tags.badges.has('broadcaster'),
@@ -114,11 +117,11 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		reconnectAttempts: 0,
 	};
 	channelsPendingJoin: Set<string>;
-	channels: Set<Channel> = new Set();
-	channelsById: Map<string, Channel> = new Map();
-	channelsByLogin: Map<string, Channel> = new Map();
-	identity: Identity = new Identity();
-	wasCloseCalled: boolean = false;
+	channels = new Set<Channel>();
+	channelsById = new Map<string, Channel>();
+	channelsByLogin = new Map<string, Channel>();
+	identity = new Identity();
+	wasCloseCalled = false;
 	constructor(opts?: Partial<ClientOptions>) {
 		super();
 		this.channelsPendingJoin = (opts?.channels ?? []).reduce((p, n) => {
