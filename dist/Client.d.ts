@@ -1,9 +1,9 @@
 import type { IrcMessage, FormatMessage } from '@tmi.js/irc-parser';
 import EventEmitter from './lib/EventEmitter';
-import * as irc from './irc';
 import Identity, { type TokenValue } from './lib/Identity';
-import type { Message, Whisper, UserState, RoomState, Moderation, Raid, Subscription, SharedChatNotice, GlobalUserState, Combos, ViewerMilestone, Unraid } from './twitch/events';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
+import * as irc from './irc';
+import type { Combos, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription, SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper } from './twitch/events';
 export interface ClientOptions {
     channels: string[];
     token: TokenValue;
@@ -100,6 +100,8 @@ export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     private onSocketError;
     getChannelById(id: string): Channel | undefined;
     getChannelByLogin(login: string): Channel | undefined;
+    private removeChannel;
+    private clearChannels;
     getChannelPlaceholder(id?: string, login?: string): ChannelPlaceholder;
     onIrcLine(line: string): void;
     onIrcMessage(ircMessage: IrcMessage): void;
@@ -113,7 +115,6 @@ export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     private handleCLEARCHAT;
     private handleCLEARMSG;
     private handleROOMSTATE;
-    private handleJOIN;
     private handlePART;
     private handleWHISPER;
     private handleRECONNECT;

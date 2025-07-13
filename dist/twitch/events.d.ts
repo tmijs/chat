@@ -278,7 +278,7 @@ export declare namespace Subscription {
         priorGifter: UserMaybeAnon;
         tags: USERNOTICE.TagsCommunityPayForward;
     }
-    export interface EventGiftPaidUpgrade extends EventBase<'giftPaidUpgrade'> {
+    export interface EventGiftPaidUpgrade extends EventBase<'giftPaidUpgrade'>, EventGoalBase {
         /** User ID of the gifter (sender) is not available */
         gifter: UserNoIdMaybeAnon;
         tags: USERNOTICE.TagsGiftPaidUpgrade;

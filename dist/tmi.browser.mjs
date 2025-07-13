@@ -189,6 +189,89 @@ var EventEmitter = class {
   }
 };
 
+// src/lib/Identity.ts
+var Identity = class {
+  name;
+  id;
+  token;
+  isAnonymous() {
+    return !this.token || typeof this.token === "string" && this.token.trim() === "";
+  }
+  setToken(value) {
+    this.token = value;
+  }
+  async getToken() {
+    if (typeof this.token === "string") {
+      return this.token;
+    } else if (typeof this.token === "function") {
+      const token = await this.token();
+      return token;
+    } else {
+      throw new Error("Invalid token");
+    }
+  }
+  [Symbol.for("nodejs.util.inspect.custom")]() {
+    const name = this.name ? `"${this.name}"` : "undefined";
+    const id = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined";
+    const token = this.token ? typeof this.token === "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
+    return `Identity { name: ${name}, id: ${id}, token: ${token} }`;
+  }
+};
+
+// src/lib/Channel.ts
+var Channel = class _Channel {
+  constructor(_id, _login) {
+    this._id = _id;
+    this._login = _login;
+    this.id = _id;
+    this.login = _login;
+  }
+  static toLogin(channelName) {
+    const name = channelName.trim().toLowerCase();
+    return name.startsWith("#") ? name.slice(1) : name;
+  }
+  static toIrc(channelName) {
+    if (channelName instanceof _Channel) {
+      return `#${channelName.login}`;
+    }
+    return `#${_Channel.toLogin(channelName)}`;
+  }
+  lastUserstate = null;
+  set id(value) {
+    if (typeof value !== "string") {
+      throw new TypeError("Channel#id must be a string");
+    }
+    this._id = value;
+  }
+  get id() {
+    return this._id;
+  }
+  set login(value) {
+    if (typeof value !== "string") {
+      throw new TypeError("Channel#login must be a string");
+    }
+    this._login = _Channel.toLogin(value);
+  }
+  get login() {
+    return this._login;
+  }
+  toString() {
+    return _Channel.toIrc(this._login);
+  }
+};
+var ChannelPlaceholder = class extends Channel {
+  constructor(id, login) {
+    if (id === void 0 && login) {
+      id = `unknownId:login(${Channel.toLogin(login)})`;
+    } else if (login === void 0 && id) {
+      login = `unknownLogin:id(${id})`;
+    } else if (id === void 0 && login === void 0) {
+      throw new Error("ChannelPlaceholder must have either id or login");
+    }
+    super(id, login);
+  }
+};
+
 // src/lib/Collection.ts
 var Collection = class extends Map {
   toJSON() {
@@ -397,89 +480,6 @@ function parseTag2(key, value, params) {
   return [key, value];
 }
 
-// src/lib/Identity.ts
-var Identity = class {
-  name;
-  id;
-  token;
-  isAnonymous() {
-    return !this.token || typeof this.token === "string" && this.token.trim() === "";
-  }
-  setToken(value) {
-    this.token = value;
-  }
-  async getToken() {
-    if (typeof this.token === "string") {
-      return this.token;
-    } else if (typeof this.token === "function") {
-      const token = await this.token();
-      return token;
-    } else {
-      throw new Error("Invalid token");
-    }
-  }
-  [Symbol.for("nodejs.util.inspect.custom")]() {
-    const name = this.name ? `"${this.name}"` : "undefined";
-    const id = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined";
-    const token = this.token ? typeof this.token === "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
-    return `Identity { name: ${name}, id: ${id}, token: ${token} }`;
-  }
-};
-
-// src/lib/Channel.ts
-var Channel = class _Channel {
-  constructor(_id, _login) {
-    this._id = _id;
-    this._login = _login;
-    this.id = _id;
-    this.login = _login;
-  }
-  static toLogin(channelName) {
-    const name = channelName.trim().toLowerCase();
-    return name.startsWith("#") ? name.slice(1) : name;
-  }
-  static toIrc(channelName) {
-    if (channelName instanceof _Channel) {
-      return `#${channelName.login}`;
-    }
-    return `#${_Channel.toLogin(channelName)}`;
-  }
-  lastUserstate = null;
-  set id(value) {
-    if (typeof value !== "string") {
-      throw new TypeError("Channel#id must be a string");
-    }
-    this._id = value;
-  }
-  get id() {
-    return this._id;
-  }
-  set login(value) {
-    if (typeof value !== "string") {
-      throw new TypeError("Channel#login must be a string");
-    }
-    this._login = _Channel.toLogin(value);
-  }
-  get login() {
-    return this._login;
-  }
-  toString() {
-    return _Channel.toIrc(this._login);
-  }
-};
-var ChannelPlaceholder = class extends Channel {
-  constructor(id, login) {
-    if (id === void 0 && login) {
-      id = `unknownId:login(${Channel.toLogin(login)})`;
-    } else if (login === void 0 && id) {
-      login = `unknownLogin:id(${id})`;
-    } else if (id === void 0 && login === void 0) {
-      throw new Error("ChannelPlaceholder must have either id or login");
-    }
-    super(id, login);
-  }
-};
-
 // src/Client.ts
 var ACTION_MESSAGE_PREFIX = "ACTION ";
 var ACTION_MESSAGE_SUFFIX = "";
@@ -487,9 +487,9 @@ var ANONYMOUS_GIFTER_LOGIN = "ananonymousgifter";
 function getUser(tags) {
   return {
     id: tags.userId,
+    color: tags.color,
     // login: tags.login ?? prefix.nick,
     display: tags.displayName,
-    color: tags.color,
     badges: tags.badges,
     badgeInfo: tags.badgeInfo,
     isBroadcaster: tags.badges.has("broadcaster"),
@@ -562,6 +562,7 @@ var Client = class extends EventEmitter {
   onSocketClose(event) {
     clearInterval(this.keepalive.pingInterval);
     clearTimeout(this.keepalive.pingTimeout);
+    this.clearChannels();
     if (!this.wasCloseCalled) {
       this.reconnect();
     }
@@ -587,6 +588,17 @@ var Client = class extends EventEmitter {
   }
   getChannelByLogin(login) {
     return this.channelsByLogin.get(Channel.toLogin(login));
+  }
+  removeChannel(channel) {
+    const successA = this.channels.delete(channel);
+    const successB = this.channelsById.delete(channel.id);
+    const successC = this.channelsByLogin.delete(channel.login);
+    return successA && successB && successC;
+  }
+  clearChannels() {
+    this.channels.clear();
+    this.channelsById.clear();
+    this.channelsByLogin.clear();
   }
   getChannelPlaceholder(id, login) {
     const channel = new ChannelPlaceholder(id, login);
@@ -622,8 +634,6 @@ var Client = class extends EventEmitter {
         return this.handleCLEARMSG(ircMessage);
       case "ROOMSTATE":
         return this.handleROOMSTATE(ircMessage);
-      case "JOIN":
-        return this.handleJOIN(ircMessage);
       case "PART":
         return this.handlePART(ircMessage);
       case "WHISPER":
@@ -634,6 +644,7 @@ var Client = class extends EventEmitter {
         return this.handle376(ircMessage);
       // Ignore these messages
       case "CAP":
+      case "JOIN":
       case "001":
       case "002":
       case "003":
@@ -801,6 +812,9 @@ var Client = class extends EventEmitter {
       isTurbo: tags.badges.has("turbo"),
       isVip: tags.badges.has("vip"),
       type: tags.userType
+    };
+    channel.lastUserstate = {
+      user
     };
     this.emit("userState", {
       channel,
@@ -1037,6 +1051,7 @@ var Client = class extends EventEmitter {
             login: tags.msgParamSenderLogin,
             display: tags.msgParamSenderName
           },
+          goal,
           tags
         });
         break;
@@ -1283,8 +1298,9 @@ var Client = class extends EventEmitter {
     if (!channel) {
       channel = new Channel(tags.roomId, channelName);
       this.channels.add(channel);
-      this.channelsById.set(tags.roomId, channel);
-      this.channelsByLogin.set(channelName, channel);
+      this.channelsById.set(channel.id, channel);
+      this.channelsByLogin.set(channel.login, channel);
+      this.emit("join", { channel });
     }
     this.emit("roomState", {
       channel,
@@ -1296,10 +1312,9 @@ var Client = class extends EventEmitter {
       tags
     });
   }
-  handleJOIN(ircMessage) {
-  }
   handlePART({ channel: channelName }) {
     const channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(void 0, channelName);
+    this.removeChannel(channel);
     this.emit("part", {
       channel
     });
@@ -1362,8 +1377,8 @@ var Client = class extends EventEmitter {
     const channel = typeof channelName === "string" ? Channel.toIrc(channelName) : channelName.toString();
     const responder = this.waitForCommand(
       this.identity.isAnonymous() ? "JOIN" : "USERSTATE",
-      (m) => m.channel === channel && (m.prefix.nick ? m.prefix.nick === this.identity.name : true),
-      { channelHint: Channel.toIrc(channelName) }
+      (m) => m.prefix.nick ? m.prefix.nick === this.identity.name : true,
+      { channelHint: channel }
     );
     this.sendIrc({ command: "JOIN", channel });
     await responder;
@@ -1372,8 +1387,8 @@ var Client = class extends EventEmitter {
     const channel = typeof channelName === "string" ? Channel.toIrc(channelName) : channelName.toString();
     const responder = this.waitForCommand(
       "PART",
-      (m) => m.channel === channel && m.prefix.nick === this.identity.name,
-      { channelHint: Channel.toIrc(channelName) }
+      (m) => m.prefix.nick === this.identity.name,
+      { channelHint: channel }
     );
     this.sendIrc({ command: "PART", channel });
     await responder;
@@ -1431,15 +1446,16 @@ var Client = class extends EventEmitter {
     return new Promise((resolve, reject) => {
       const failOnDrop = opts?.failOnDrop ?? true;
       const timeoutMs = opts?.timeoutMs ?? Math.max(1e3, Math.min(this.keepalive.maxWaitTimeoutMs, (this.keepalive.latencyMs ?? 500) * 2));
+      const channelHint = opts?.channelHint;
       const commandListener = (ircMessage) => {
-        if (ircMessage.command === command && (!filterCallback || filterCallback(ircMessage))) {
+        if (ircMessage.command === command && (!channelHint || ircMessage.channel === channelHint) && (!filterCallback || filterCallback(ircMessage))) {
           stop();
           clearTimeout(timeout);
           resolve(ircMessage);
         }
       };
       const dropListener = (event) => {
-        if (opts?.channelHint && event.channel.toString() !== opts?.channelHint) {
+        if (channelHint && event.channel.toString() !== channelHint) {
           return;
         }
         stop();

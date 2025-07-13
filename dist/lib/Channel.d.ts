@@ -5,7 +5,7 @@ export default class Channel {
     private _login;
     static toLogin(channelName: string): string;
     static toIrc(channelName: string | Channel): ChannelString;
-    lastUserstate: UserState.Event | null;
+    lastUserstate: Omit<UserState.Event, 'channel'> | null;
     constructor(_id: string, _login: string);
     set id(value: string);
     get id(): string;
