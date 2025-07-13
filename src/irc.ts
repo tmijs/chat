@@ -333,7 +333,10 @@ export namespace USERNOTICE {
 		msgParamPriorGifterId: TagType.msgParamPriorGifterId;
 		msgParamPriorGifterUserName: TagType.msgParamPriorGifterUserName;
 	}
-	export interface TagsGiftPaidUpgrade extends BaseTags<'giftpaidupgrade'> {
+	/**
+	 * @example `${string} is continuing the Gift Sub they got from ${string}!`
+	 */
+	export interface TagsGiftPaidUpgrade extends BaseTags<'giftpaidupgrade'>, Partial<BaseTags_Goal> {
 		msgParamSenderLogin: TagType.msgParamSenderLogin;
 		msgParamSenderName: TagType.msgParamSenderName;
 	}

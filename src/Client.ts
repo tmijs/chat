@@ -663,6 +663,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						login: tags.msgParamSenderLogin,
 						display: tags.msgParamSenderName
 					},
+					goal,
 					tags
 				});
 				break;

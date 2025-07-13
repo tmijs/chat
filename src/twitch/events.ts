@@ -323,7 +323,7 @@ export namespace Subscription {
 		priorGifter: UserMaybeAnon;
 		tags: USERNOTICE.TagsCommunityPayForward;
 	}
-	export interface EventGiftPaidUpgrade extends EventBase<'giftPaidUpgrade'> {
+	export interface EventGiftPaidUpgrade extends EventBase<'giftPaidUpgrade'>, EventGoalBase {
 		// No plan data
 		// plan: SubPlanNoName;
 		/** User ID of the gifter (sender) is not available */
