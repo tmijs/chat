@@ -156,12 +156,36 @@ export namespace GLOBALUSERSTATE {
 
 export namespace USERNOTICE {
 	export type Command = 'USERNOTICE';
+
+	export type AnnounceColor = 'PRIMARY' | 'BLUE' | 'GREEN' | 'ORANGE' | 'PURPLE';
+	export type SubPlanTierString = '1000' | '2000' | '3000' | 'Prime';
+	export type GoalContributionType = 'SUB_POINTS' | 'SUBS' | 'NEW_SUB_POINTS' | 'NEW_SUBS';
+	export type GiftTheme = 'showlove' | 'party' | 'lul' | 'biblethump';
+
 	export interface BaseTags<MsgId> extends Omit<ChatMessageTags, 'firstMsg'> {
 		login: TagType.login;
 		msgId: MsgId;
 		systemMsg: TagType.systemMsg;
 	}
-	export type AnnounceColor = 'PRIMARY' | 'BLUE' | 'GREEN' | 'ORANGE' | 'PURPLE';
+	export interface BaseTags_Goal {
+		msgParamGoalContributionType: GoalContributionType;
+		msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
+		msgParamGoalDescription: TagType.msgParamGoalDescription;
+		msgParamGoalTargetContributions: TagType.msgParamGoalTargetContributions;
+		msgParamGoalUserContributions: TagType.msgParamGoalUserContributions;
+	}
+	/**
+	 * Tags included in both standard and community pay forward events.
+	 */
+	export interface BaseTags_PayForward {
+		msgParamPriorGifterAnonymous: TagType.msgParamPriorGifterAnonymous;
+		msgParamPriorGifterDisplayName: TagType.msgParamPriorGifterDisplayName;
+		msgParamPriorGifterId: TagType.msgParamPriorGifterId;
+		msgParamPriorGifterUserName: TagType.msgParamPriorGifterUserName;
+	}
+
+	// Tags
+
 	export interface TagsAnnouncement extends BaseTags<'announcement'> {
 		msgParamColor: AnnounceColor;
 		systemMsg: '';
@@ -183,16 +207,6 @@ export namespace USERNOTICE {
 	 */
 	export interface TagsUnraid extends BaseTags<'unraid'> {
 	}
-	interface BaseTags_Goal {
-		msgParamGoalContributionType: GoalContributionType;
-		msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
-		msgParamGoalDescription: TagType.msgParamGoalDescription;
-		msgParamGoalTargetContributions: TagType.msgParamGoalTargetContributions;
-		msgParamGoalUserContributions: TagType.msgParamGoalUserContributions;
-	}
-	export type SubPlanTierString = '1000' | '2000' | '3000' | 'Prime';
-	export type GoalContributionType = 'SUB_POINTS' | 'SUBS' | 'NEW_SUB_POINTS' | 'NEW_SUBS';
-	export type GiftTheme = 'showlove' | 'party' | 'lul' | 'biblethump';
 	/**
 	 * @example `${string} subscribed at Tier ${number}.`
 	 * @example `${string} subscribed with Prime.`
@@ -333,15 +347,6 @@ export namespace USERNOTICE {
 		 */
 		msgParamSenderCount: TagType.msgParamSenderCount;
 		msgParamSubPlan: SubPlanTierString;
-	}
-	/**
-	 * Tags included in both standard and community pay forward events.
-	 */
-	interface BaseTags_PayForward {
-		msgParamPriorGifterAnonymous: TagType.msgParamPriorGifterAnonymous;
-		msgParamPriorGifterDisplayName: TagType.msgParamPriorGifterDisplayName;
-		msgParamPriorGifterId: TagType.msgParamPriorGifterId;
-		msgParamPriorGifterUserName: TagType.msgParamPriorGifterUserName;
 	}
 	/**
 	 * @example `${string} is paying forward the Gift they got from ${string} to ${string}!`
