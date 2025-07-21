@@ -453,12 +453,12 @@ var Client = class extends EventEmitter {
           display: tags.replyThreadParentDisplayName
         }
       }
-    }), "customRewardId" in tags)
+    }), "customRewardId" in tags && tags.customRewardId)
       reward = {
         type: "custom",
         rewardId: tags.customRewardId
       };
-    else if ("msgId" in tags)
+    else if ("msgId" in tags && tags.msgId)
       switch (tags.msgId) {
         case "highlighted-message": {
           reward = { type: "highlighted" };

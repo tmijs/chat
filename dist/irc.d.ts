@@ -120,18 +120,40 @@ export declare namespace GLOBALUSERSTATE {
     type IrcMessage = IM<Command, Tags, PrefixHostOnly, '', []>;
 }
 export declare namespace USERNOTICE {
-    export type Command = 'USERNOTICE';
-    export interface BaseTags<MsgId> extends Omit<ChatMessageTags, 'firstMsg'> {
+    type Command = 'USERNOTICE';
+    type AnnounceColor = 'PRIMARY' | 'BLUE' | 'GREEN' | 'ORANGE' | 'PURPLE';
+    type SubPlanTierString = '1000' | '2000' | '3000' | 'Prime';
+    type GoalContributionType = 'SUB_POINTS' | 'SUBS' | 'NEW_SUB_POINTS' | 'NEW_SUBS';
+    type GiftTheme = 'showlove' | 'party' | 'lul' | 'biblethump';
+    interface BaseTags<MsgId> extends Omit<ChatMessageTags, 'firstMsg'> {
         login: TagType.login;
         msgId: MsgId;
         systemMsg: TagType.systemMsg;
     }
-    export type AnnounceColor = 'PRIMARY' | 'BLUE' | 'GREEN' | 'ORANGE' | 'PURPLE';
-    export interface TagsAnnouncement extends BaseTags<'announcement'> {
+    interface BaseTags_Goal {
+        msgParamGoalContributionType: GoalContributionType;
+        msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
+        msgParamGoalDescription: TagType.msgParamGoalDescription;
+        msgParamGoalTargetContributions: TagType.msgParamGoalTargetContributions;
+        msgParamGoalUserContributions: TagType.msgParamGoalUserContributions;
+    }
+    /**
+     * Tags included in both standard and community pay forward events.
+     */
+    interface BaseTags_PayForward {
+        msgParamPriorGifterAnonymous: TagType.msgParamPriorGifterAnonymous;
+        msgParamPriorGifterDisplayName: TagType.msgParamPriorGifterDisplayName;
+        msgParamPriorGifterId: TagType.msgParamPriorGifterId;
+        msgParamPriorGifterUserName: TagType.msgParamPriorGifterUserName;
+    }
+    interface TagsAnnouncement extends BaseTags<'announcement'> {
         msgParamColor: AnnounceColor;
         systemMsg: '';
     }
-    export interface TagsRaid extends BaseTags<'raid'> {
+    /**
+     * @example `${number} raiders from ${string} have joined!`
+     */
+    interface TagsRaid extends BaseTags<'raid'> {
         /** Duplicate data */
         msgParamDisplayName: TagType.msgParamDisplayName;
         /** Duplicate data */
@@ -143,19 +165,13 @@ export declare namespace USERNOTICE {
     /**
      * @example `The raid has been canceled.`
      */
-    export interface TagsUnraid extends BaseTags<'unraid'> {
+    interface TagsUnraid extends BaseTags<'unraid'> {
     }
-    interface BaseTags_Goal {
-        msgParamGoalContributionType: GoalContributionType;
-        msgParamGoalCurrentContributions: TagType.msgParamGoalCurrentContributions;
-        msgParamGoalDescription: TagType.msgParamGoalDescription;
-        msgParamGoalTargetContributions: TagType.msgParamGoalTargetContributions;
-        msgParamGoalUserContributions: TagType.msgParamGoalUserContributions;
-    }
-    export type SubPlanTierString = '1000' | '2000' | '3000' | 'Prime';
-    export type GoalContributionType = 'SUB_POINTS' | 'SUBS' | 'NEW_SUB_POINTS' | 'NEW_SUBS';
-    export type GiftTheme = 'showlove' | 'party' | 'lul' | 'biblethump';
-    export interface TagsSub extends BaseTags<'sub'>, Partial<BaseTags_Goal> {
+    /**
+     * @example `${string} subscribed at Tier ${number}.`
+     * @example `${string} subscribed with Prime.`
+     */
+    interface TagsSub extends BaseTags<'sub'>, Partial<BaseTags_Goal> {
         /**
          * Always `1`
          */
@@ -189,9 +205,12 @@ export declare namespace USERNOTICE {
     }
     /**
      * @example `${string} subscribed at Tier ${number}. They've subscribed for ${number} months!`
+     * @example `${string} subscribed at Tier ${number}. They've subscribed for ${number} months, currently on a ${number} month streak!`
+     * @example `${string} subscribed with Prime. They've subscribed for ${number} months!`
+     * @example `${string} subscribed with Prime. They've subscribed for ${number} months, currently on a ${number} month streak!`
      * @todo Can this include goal data? Seems likely but unconfirmed.
      */
-    export interface TagsResub extends BaseTags<'resub'> {
+    interface TagsResub extends BaseTags<'resub'> {
         msgParamAnonGift?: boolean;
         msgParamCumulativeMonths: number;
         msgParamGiftMonthBeingRedeemed?: number;
@@ -220,7 +239,14 @@ export declare namespace USERNOTICE {
         msgParamSubPlan: SubPlanTierString;
         msgParamWasGifted: boolean;
     }
-    export interface TagsSubGift extends BaseTags<'subgift'>, Partial<BaseTags_Goal> {
+    /**
+     * @example `${string} gifted a Tier ${number} sub to ${string}!`
+     * @example `${string} gifted a Tier ${number} sub to ${string}! They have given ${number} Gift Subs in the channel!`
+     * @example `${string} gifted a Tier ${number} sub to ${string}! This is their first Gift Sub in the channel!`
+     * @example `An anonymous user gifted a Tier ${number} sub to ${string}! `
+     * // (The space at the end is common to this format)
+     */
+    interface TagsSubGift extends BaseTags<'subgift'>, Partial<BaseTags_Goal> {
         /**
          * An ID that can be used to tie this message with a submysterygift event. Only present if this subgift is part
          * of a submysterygift event. This will be the same as the msgParamOriginId value.
@@ -245,13 +271,23 @@ export declare namespace USERNOTICE {
         msgParamRecipientId: TagType.msgParamRecipientId;
         msgParamRecipientUserName: TagType.msgParamRecipientUserName;
         /**
-         * Lifetime subscriptions sent by this user. Possibly 0 if the user has this total hidden.
+         * Lifetime subscriptions sent by this user. Possibly 0 if the user has this total hidden or this subgift is
+         * part of a submysterygift event.
          */
         msgParamSenderCount: TagType.msgParamSenderCount;
         msgParamSubPlanName: TagType.msgParamSubPlanName;
         msgParamSubPlan: SubPlanTierString;
     }
-    export interface TagsSubMysteryGift extends BaseTags<'submysterygift'>, Partial<BaseTags_Goal> {
+    /**
+     * @example `${string} is gifting ${number} Tier ${number} Subs to ${string}'s community! They've gifted a total of ${number} in the channel!`
+     * // This is the message used for their first mystery* gift(s). e.g., "Username is gifting 1 Tier 1 Subs to
+     * // Channels's community! They've gifted a total of 1 in the channel!"
+     * @example `${string} is gifting ${number} Tier ${number} Subs to ${string}'s community!`
+     * @example `An anonymous user is gifting ${number} Tier ${number} Subs to ${string}'s community!`
+     * @example `We added ${number} Gift Subs to ${string}'s gift!`
+     * @example `We added ${number} Gift Subs AND ${number} Bonus Gift Subs to ${string}'s gift!`
+     */
+    interface TagsSubMysteryGift extends BaseTags<'submysterygift'>, Partial<BaseTags_Goal> {
         /**
          * An ID that can be used to tie this message with subgift events.
          */
@@ -273,26 +309,18 @@ export declare namespace USERNOTICE {
         msgParamSubPlan: SubPlanTierString;
     }
     /**
-     * Tags included in both standard and community pay forward events.
-     */
-    interface BaseTags_PayForward {
-        msgParamPriorGifterAnonymous: TagType.msgParamPriorGifterAnonymous;
-        msgParamPriorGifterDisplayName: TagType.msgParamPriorGifterDisplayName;
-        msgParamPriorGifterId: TagType.msgParamPriorGifterId;
-        msgParamPriorGifterUserName: TagType.msgParamPriorGifterUserName;
-    }
-    /**
      * @example `${string} is paying forward the Gift they got from ${string} to ${string}!`
      */
-    export interface TagsStandardPayForward extends BaseTags<'standardpayforward'>, BaseTags_PayForward {
+    interface TagsStandardPayForward extends BaseTags<'standardpayforward'>, BaseTags_PayForward {
         msgParamRecipientDisplayName: TagType.msgParamRecipientDisplayName;
         msgParamRecipientId: TagType.msgParamRecipientId;
         msgParamRecipientUserName: TagType.msgParamRecipientUserName;
     }
     /**
      * @example `${string} is paying forward the Gift they got from ${string} to the community!`
+     * @example `${string} is paying forward the Gift they got from an anonymous gifter to the community!`
      */
-    export interface TagsCommunityPayForward extends BaseTags<'communitypayforward'>, BaseTags_PayForward {
+    interface TagsCommunityPayForward extends BaseTags<'communitypayforward'>, BaseTags_PayForward {
         msgParamPriorGifterAnonymous: TagType.msgParamPriorGifterAnonymous;
         msgParamPriorGifterDisplayName: TagType.msgParamPriorGifterDisplayName;
         msgParamPriorGifterId: TagType.msgParamPriorGifterId;
@@ -301,27 +329,27 @@ export declare namespace USERNOTICE {
     /**
      * @example `${string} is continuing the Gift Sub they got from ${string}!`
      */
-    export interface TagsGiftPaidUpgrade extends BaseTags<'giftpaidupgrade'>, Partial<BaseTags_Goal> {
+    interface TagsGiftPaidUpgrade extends BaseTags<'giftpaidupgrade'>, Partial<BaseTags_Goal> {
         msgParamSenderLogin: TagType.msgParamSenderLogin;
         msgParamSenderName: TagType.msgParamSenderName;
     }
     /**
      * @example `${string} converted from a Prime sub to a Tier ${number} sub!`
      */
-    export interface TagsPrimePaidUpgrade extends BaseTags<'primepaidupgrade'> {
+    interface TagsPrimePaidUpgrade extends BaseTags<'primepaidupgrade'> {
         msgParamSubPlan: Exclude<SubPlanTierString, 'Prime'>;
     }
     /**
      * @example `Combo started! You have ${number}s left to join.`
      */
-    export interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
+    interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
         msgParamGiftId: TagType.msgParamGiftId;
         msgParamMsRemaining: TagType.msgParamMsRemaining;
     }
     /**
      * @example `{string}'s community sent ${number}!`
      */
-    export interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
+    interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
         msgParamChannelDisplayName: TagType.msgParamChannelDisplayName;
         msgParamContributor1Taps: TagType.msgParamContributor1Taps;
         msgParamContributor1: TagType.msgParamContributor1;
@@ -339,7 +367,7 @@ export declare namespace USERNOTICE {
     /**
      * @example `Milestone ${number} achieved!`
      */
-    export interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
+    interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
         msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
         msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
         /** `'heart' | 'awww' | 'dino' | 'horselul'` */
@@ -348,19 +376,19 @@ export declare namespace USERNOTICE {
     /**
      * @example `bits badge tier notification`
      */
-    export interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
+    interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
         msgParamThreshold: TagType.msgParamThreshold;
     }
     /**
      * @example `{string} watched {number} consecutive streams this month and sparked a watch streak!`
      */
-    export interface TagsViewerMilestone extends BaseTags<'viewermilestone'> {
+    interface TagsViewerMilestone extends BaseTags<'viewermilestone'> {
         msgParamCategory: TagType.msgParamCategory;
         msgParamCopoReward: TagType.msgParamCopoReward;
         msgParamId: TagType.msgParamId;
         msgParamValue: TagType.msgParamValue;
     }
-    export interface TagsSharedChatNotice extends BaseTags<'sharedchatnotice'> {
+    interface TagsSharedChatNotice extends BaseTags<'sharedchatnotice'> {
         sourceBadgeInfo: BadgeInfo;
         sourceBadges: Badges;
         sourceId: TagType.sourceId;
@@ -368,9 +396,8 @@ export declare namespace USERNOTICE {
         sourceOnly: TagType.sourceOnly;
         sourceRoomId: TagType.sourceRoomId;
     }
-    export type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsViewerMilestone | TagsSharedChatNotice;
-    export type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [message: string]>;
-    export {};
+    type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsViewerMilestone | TagsSharedChatNotice;
+    type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [message: string]>;
 }
 export declare namespace NOTICE {
     type Command = 'NOTICE';
