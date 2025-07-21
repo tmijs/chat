@@ -330,13 +330,13 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				}
 			};
 		}
-		if('customRewardId' in tags) {
+		if('customRewardId' in tags && tags.customRewardId) {
 			reward = {
 				type: 'custom',
 				rewardId: tags.customRewardId
 			};
 		}
-		else if('msgId' in tags) {
+		else if('msgId' in tags && tags.msgId) {
 			switch(tags.msgId) {
 				case 'highlighted-message': {
 					reward = { type: 'highlighted' };
