@@ -76,7 +76,8 @@ export namespace Message {
 	}
 	interface Reward_GigantifiedEmote {
 		type: 'gigantifiedEmote';
-		emoteId: string;
+		emote: Emote;
+		emoteId: Emote['id'];
 	}
 	interface Reward_MessageEffects {
 		type: 'messageEffects';

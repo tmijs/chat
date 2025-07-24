@@ -347,21 +347,35 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					break;
 				}
 				case 'gigantified-emote-message': {
+					let finalEmote: Emote;
+					const getEmote = () => {
+						if(finalEmote) {
+							return finalEmote;
+						}
+						if(!tags.emotes.length) {
+							throw new Error('No emotes found in gigantified emote message');
+						}
+						let _finalEmote: Emote = tags.emotes[0];
+						let finalIndex = _finalEmote.indices.at(-1)![1];
+						for(let i = 1; i < tags.emotes.length; i++) {
+							const emote = tags.emotes[i];
+							const emoteIndex = emote.indices.at(-1)![1];
+							if(emoteIndex > finalIndex) {
+								finalEmote = emote;
+								finalIndex = emoteIndex;
+							}
+						}
+						finalEmote = _finalEmote;
+						return finalEmote;
+					};
 					reward = {
 						type: 'gigantifiedEmote',
+						get emote() {
+							return getEmote();
+						},
 						get emoteId() {
-							let finalEmote: Emote = tags.emotes[0];
-							let finalIndex = finalEmote.indices[finalEmote.indices.length - 1][1];
-							for(let i = 1; i < tags.emotes.length; i++) {
-								const emote = tags.emotes[i];
-								const lastIndex = emote.indices[emote.indices.length - 1][1];
-								if(lastIndex > finalIndex) {
-									finalEmote = emote;
-									finalIndex = lastIndex;
-								}
-							}
-							return finalEmote.id;
-						}
+							return getEmote().id;
+						},
 					};
 					break;
 				}
