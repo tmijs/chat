@@ -429,6 +429,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			display: tags.displayName,
 			badges: tags.badges,
 			badgeInfo: tags.badgeInfo,
+			isBot: tags.badges.has('bot-badge'),
 			isBroadcaster: tags.badges.has('broadcaster'),
 			isMod: tags.mod,
 			isSubscriber: tags.subscriber,
