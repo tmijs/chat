@@ -12,6 +12,7 @@ export type PrefixFull = Record<keyof PrefixHostOnly, string>;
 
 type KnownBadges =
 	| 'bits'
+	| 'bot-badge'
 	| 'broadcaster'
 	| 'founder'
 	| 'moderator'

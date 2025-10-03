@@ -23,6 +23,7 @@ interface UserExtra extends User {
 	color: string;
 	badges: Badges;
 	badgeInfo: BadgeInfo;
+	isBot: boolean;
 	isBroadcaster: boolean;
 	isMod: boolean;
 	isSubscriber: boolean;
