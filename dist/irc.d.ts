@@ -7,7 +7,7 @@ export interface PrefixHostOnly {
     host: string;
 }
 export type PrefixFull = Record<keyof PrefixHostOnly, string>;
-type KnownBadges = 'bits' | 'broadcaster' | 'founder' | 'moderator' | 'subscriber' | 'staff' | 'turbo' | 'vip';
+type KnownBadges = 'bits' | 'bot-badge' | 'broadcaster' | 'founder' | 'moderator' | 'subscriber' | 'staff' | 'turbo' | 'vip';
 export type Badges = Collection<KnownBadges, string>;
 export type BadgeInfo = Collection<'subscriber', string>;
 export type UserType = '' | 'admin' | 'global_mod' | 'mod' | 'staff';
@@ -262,9 +262,6 @@ export declare namespace USERNOTICE {
          */
         msgParamGiftMonths: TagType.msgParamGiftMonths;
         msgParamGiftTheme?: GiftTheme;
-        /**
-         * @deprecated Always `0`
-         */
         msgParamMonths: TagType.msgParamMonths;
         msgParamOriginId: TagType.msgParamOriginId;
         msgParamRecipientDisplayName: TagType.msgParamRecipientDisplayName;
@@ -357,7 +354,7 @@ export declare namespace USERNOTICE {
         msgParamContributor2?: TagType.msgParamContributor2;
         msgParamContributor3Taps?: TagType.msgParamContributor3Taps;
         msgParamContributor3?: TagType.msgParamContributor3;
-        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
         msgParamGiftId: TagType.msgParamGiftId;
         /** `1 | 2 | 3` */
         msgParamLargestContributorCount: TagType.msgParamLargestContributorCount;
@@ -370,7 +367,7 @@ export declare namespace USERNOTICE {
     interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
         msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
         msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
-        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
         msgParamGiftId: TagType.msgParamGiftId;
     }
     /**
@@ -378,6 +375,12 @@ export declare namespace USERNOTICE {
      */
     interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
         msgParamThreshold: TagType.msgParamThreshold;
+    }
+    /**
+     * @example `Unlocked a social sharing badge`
+     */
+    interface TagsSocialSharingBadge extends BaseTags<'socialsharingbadge'> {
+        msgParamCurrentBadgeLevel: TagType.msgParamCurrentBadgeLevel;
     }
     /**
      * @example `{string} watched {number} consecutive streams this month and sparked a watch streak!`
@@ -396,7 +399,7 @@ export declare namespace USERNOTICE {
         sourceOnly: TagType.sourceOnly;
         sourceRoomId: TagType.sourceRoomId;
     }
-    type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsViewerMilestone | TagsSharedChatNotice;
+    type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsSocialSharingBadge | TagsViewerMilestone | TagsSharedChatNotice;
     type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [message: string]>;
 }
 export declare namespace NOTICE {
@@ -488,6 +491,7 @@ export declare namespace TagType {
     type msgParamContributor3Taps = number;
     type msgParamCopoReward = number;
     type msgParamCumulativeMonths = number;
+    type msgParamCurrentBadgeLevel = number;
     type msgParamGiftMonthBeingRedeemed = number;
     type msgParamGiftMonths = number;
     type msgParamGoalCurrentContributions = number;

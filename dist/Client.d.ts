@@ -19,6 +19,7 @@ export type ConnectionEvents = {
     reconnecting: {
         attempts: number;
         waitTime: number;
+        reason: string;
     };
     pong: void;
 };
@@ -77,6 +78,10 @@ interface Keepalive {
     pingTimeoutSeconds: number;
     /** The amount of reconnect attempts. */
     reconnectAttempts: number;
+    /** The timeout ID for the reconnect timeout. */
+    reconnectTimeout?: ReturnType<typeof setTimeout>;
+    /** A function to cancel the current reconnect attempt. Calling this will throw an error for the reconnect caller. */
+    cancelReconnect?: () => void;
 }
 type ToTuples<T extends Record<string, any>> = {
     [K in keyof T]: T[K] extends any[] ? T[K] : T[K] extends void ? [] : [event: T[K]];
@@ -93,7 +98,7 @@ export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     constructor(opts?: Partial<ClientOptions>);
     connect(): void;
     close(): void;
-    reconnect(): Promise<void>;
+    reconnect(reason?: string): Promise<void>;
     private onSocketMessage;
     private onSocketClose;
     private onSocketOpen;
@@ -104,7 +109,7 @@ export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     private clearChannels;
     getChannelPlaceholder(id?: string, login?: string): ChannelPlaceholder;
     onIrcLine(line: string): void;
-    onIrcMessage(ircMessage: IrcMessage): void;
+    onIrcMessage(ircMessage: IrcMessage): void | Promise<void>;
     private handlePING;
     private handlePONG;
     private handlePRIVMSG;

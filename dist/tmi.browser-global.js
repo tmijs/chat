@@ -328,6 +328,7 @@ var tmi = (() => {
       case "msgParamCopoReward":
       // "msg-param-copoReward"
       case "msgParamCumulativeMonths":
+      case "msgParamCurrentBadgeLevel":
       case "msgParamGiftMatchBonusCount":
       case "msgParamGiftMatchExtraCount":
       case "msgParamGiftMonthBeingRedeemed":
@@ -522,6 +523,7 @@ var tmi = (() => {
       display: tags.displayName,
       badges: tags.badges,
       badgeInfo: tags.badgeInfo,
+      isBot: tags.badges.has("bot-badge"),
       isBroadcaster: tags.badges.has("broadcaster"),
       isMod: tags.mod,
       isSubscriber: tags.subscriber,
@@ -574,17 +576,53 @@ var tmi = (() => {
         this.socket.close();
       }
     }
-    async reconnect() {
-      if (this.isConnected()) {
-        this.socket.close();
+    async reconnect(reason = "reconnect called") {
+      if (this.keepalive.reconnectTimeout) {
+        throw new Error("Cannot reconnect while already reconnecting");
       }
+      this.close();
       const reconnectWaitTime = Math.min(1e3 * 1.23 ** this.keepalive.reconnectAttempts++, 6e4);
       this.emit("reconnecting", {
         attempts: this.keepalive.reconnectAttempts,
-        waitTime: reconnectWaitTime
+        waitTime: reconnectWaitTime,
+        reason
       });
-      await new Promise((resolve) => setTimeout(resolve, reconnectWaitTime));
-      this.connect();
+      let hasSettled = false;
+      let resolve;
+      let reject;
+      const promise = new Promise((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      this.keepalive.cancelReconnect = () => {
+        if (this.keepalive.reconnectTimeout) {
+          clearTimeout(this.keepalive.reconnectTimeout);
+          this.keepalive.reconnectTimeout = void 0;
+        }
+        if (!hasSettled) {
+          hasSettled = true;
+          reject(new Error("Reconnect cancelled"));
+        }
+      };
+      this.keepalive.reconnectTimeout = setTimeout(() => {
+        this.keepalive.cancelReconnect = void 0;
+        this.keepalive.reconnectTimeout = void 0;
+        if (!hasSettled) {
+          hasSettled = true;
+          this.connect();
+          resolve();
+        }
+      }, reconnectWaitTime);
+      try {
+        await promise;
+      } catch (err) {
+        if (this.keepalive.reconnectTimeout) {
+          clearTimeout(this.keepalive.reconnectTimeout);
+        }
+        this.keepalive.cancelReconnect = void 0;
+        this.keepalive.reconnectTimeout = void 0;
+        throw err;
+      }
     }
     onSocketMessage(event) {
       event.data.trim().split("\r\n").forEach((line) => this.onIrcLine(line));
@@ -593,8 +631,10 @@ var tmi = (() => {
       clearInterval(this.keepalive.pingInterval);
       clearTimeout(this.keepalive.pingTimeout);
       this.clearChannels();
-      if (!this.wasCloseCalled) {
-        this.reconnect();
+      if (!this.wasCloseCalled && !this.keepalive.cancelReconnect) {
+        this.reconnect("Socket was closed unexpectedly").catch((err) => {
+          this.emit("error", err);
+        });
       }
       this.emit("close", {
         reason: event.reason,
@@ -768,20 +808,34 @@ var tmi = (() => {
             break;
           }
           case "gigantified-emote-message": {
+            let finalEmote;
+            const getEmote = () => {
+              if (finalEmote) {
+                return finalEmote;
+              }
+              if (!tags.emotes.length) {
+                throw new Error("No emotes found in gigantified emote message");
+              }
+              let _finalEmote = tags.emotes[0];
+              let finalIndex = _finalEmote.indices.at(-1)[1];
+              for (let i = 1; i < tags.emotes.length; i++) {
+                const emote = tags.emotes[i];
+                const emoteIndex = emote.indices.at(-1)[1];
+                if (emoteIndex > finalIndex) {
+                  finalEmote = emote;
+                  finalIndex = emoteIndex;
+                }
+              }
+              finalEmote = _finalEmote;
+              return finalEmote;
+            };
             reward = {
               type: "gigantifiedEmote",
+              get emote() {
+                return getEmote();
+              },
               get emoteId() {
-                let finalEmote = tags.emotes[0];
-                let finalIndex = finalEmote.indices[finalEmote.indices.length - 1][1];
-                for (let i = 1; i < tags.emotes.length; i++) {
-                  const emote = tags.emotes[i];
-                  const lastIndex = emote.indices[emote.indices.length - 1][1];
-                  if (lastIndex > finalIndex) {
-                    finalEmote = emote;
-                    finalIndex = lastIndex;
-                  }
-                }
-                return finalEmote.id;
+                return getEmote().id;
               }
             };
             break;
@@ -835,6 +889,7 @@ var tmi = (() => {
         display: tags.displayName,
         badges: tags.badges,
         badgeInfo: tags.badgeInfo,
+        isBot: tags.badges.has("bot-badge"),
         isBroadcaster: tags.badges.has("broadcaster"),
         isMod: tags.mod,
         isSubscriber: tags.subscriber,
@@ -993,6 +1048,7 @@ var tmi = (() => {
               login: tags.msgParamRecipientUserName,
               display: tags.msgParamRecipientDisplayName
             },
+            cumulativeMonths: tags.msgParamMonths,
             plan: {
               name: tags.msgParamSubPlanName,
               plan: tags.msgParamSubPlan,
@@ -1191,6 +1247,24 @@ var tmi = (() => {
           });
           break;
         }
+        case "socialsharingbadge": {
+          this.emit("badgeUpgrade", {
+            channel,
+            user,
+            type: "socialSharing",
+            threshold: tags.msgParamCurrentBadgeLevel,
+            tags,
+            message: {
+              id: tags.id,
+              text,
+              flags: tags.flags,
+              emotes: tags.emotes,
+              isAction: false,
+              isFirst: "firstMsg" in tags && tags.firstMsg === true
+            }
+          });
+          break;
+        }
         case "viewermilestone": {
           this.emit("viewerMilestone", {
             channel,
@@ -1260,6 +1334,7 @@ var tmi = (() => {
           break;
         // Messages that mean a sent message was dropped
         case "msg_channel_suspended":
+        case "msg_banned_phone_number_alias":
         case "msg_duplicate":
         case "msg_timedout":
         case "unrecognized_cmd":
@@ -1376,8 +1451,14 @@ var tmi = (() => {
         }
       });
     }
-    handleRECONNECT(ircMessage) {
-      this.reconnect();
+    async handleRECONNECT(ircMessage) {
+      if (!this.keepalive.cancelReconnect) {
+        try {
+          await this.reconnect("RECONNECT command received");
+        } catch (err) {
+          this.emit("error", err);
+        }
+      }
     }
     handle376(ircMessage) {
       this.identity.name = ircMessage.params[0];
@@ -1460,7 +1541,9 @@ var tmi = (() => {
     ping() {
       this.keepalive.lastPingSent = Date.now();
       this.sendIrc({ command: "PING" });
-      this.keepalive.pingTimeout = setTimeout(() => this.reconnect(), this.keepalive.pingTimeoutSeconds * 1e3);
+      this.keepalive.pingTimeout = setTimeout(() => {
+        this.reconnect("Ping timeout exceeded");
+      }, this.keepalive.pingTimeoutSeconds * 1e3);
     }
     async joinPendingChannels() {
       for (const channel of this.channelsPendingJoin) {

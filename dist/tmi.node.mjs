@@ -117,6 +117,7 @@ function parseTag(key, value, params) {
     case "msgParamCopoReward":
     // "msg-param-copoReward"
     case "msgParamCumulativeMonths":
+    case "msgParamCurrentBadgeLevel":
     case "msgParamGiftMatchBonusCount":
     case "msgParamGiftMatchExtraCount":
     case "msgParamGiftMonthBeingRedeemed":
@@ -283,6 +284,7 @@ function getUser(tags) {
     display: tags.displayName,
     badges: tags.badges,
     badgeInfo: tags.badgeInfo,
+    isBot: tags.badges.has("bot-badge"),
     isBroadcaster: tags.badges.has("broadcaster"),
     isMod: tags.mod,
     isSubscriber: tags.subscriber,
@@ -320,20 +322,38 @@ var Client = class extends EventEmitter {
   close() {
     this.wasCloseCalled = !0, this.isConnected() && this.socket.close();
   }
-  async reconnect() {
-    this.isConnected() && this.socket.close();
+  async reconnect(reason = "reconnect called") {
+    if (this.keepalive.reconnectTimeout)
+      throw new Error("Cannot reconnect while already reconnecting");
+    this.close();
     let reconnectWaitTime = Math.min(1e3 * 1.23 ** this.keepalive.reconnectAttempts++, 6e4);
     this.emit("reconnecting", {
       attempts: this.keepalive.reconnectAttempts,
-      waitTime: reconnectWaitTime
-    }), await new Promise((resolve) => setTimeout(resolve, reconnectWaitTime)), this.connect();
+      waitTime: reconnectWaitTime,
+      reason
+    });
+    let hasSettled = !1, resolve, reject, promise = new Promise((res, rej) => {
+      resolve = res, reject = rej;
+    });
+    this.keepalive.cancelReconnect = () => {
+      this.keepalive.reconnectTimeout && (clearTimeout(this.keepalive.reconnectTimeout), this.keepalive.reconnectTimeout = void 0), hasSettled || (hasSettled = !0, reject(new Error("Reconnect cancelled")));
+    }, this.keepalive.reconnectTimeout = setTimeout(() => {
+      this.keepalive.cancelReconnect = void 0, this.keepalive.reconnectTimeout = void 0, hasSettled || (hasSettled = !0, this.connect(), resolve());
+    }, reconnectWaitTime);
+    try {
+      await promise;
+    } catch (err) {
+      throw this.keepalive.reconnectTimeout && clearTimeout(this.keepalive.reconnectTimeout), this.keepalive.cancelReconnect = void 0, this.keepalive.reconnectTimeout = void 0, err;
+    }
   }
   onSocketMessage(event) {
     event.data.trim().split(`\r
 `).forEach((line) => this.onIrcLine(line));
   }
   onSocketClose(event) {
-    clearInterval(this.keepalive.pingInterval), clearTimeout(this.keepalive.pingTimeout), this.clearChannels(), this.wasCloseCalled || this.reconnect(), this.emit("close", {
+    clearInterval(this.keepalive.pingInterval), clearTimeout(this.keepalive.pingTimeout), this.clearChannels(), !this.wasCloseCalled && !this.keepalive.cancelReconnect && this.reconnect("Socket was closed unexpectedly").catch((err) => {
+      this.emit("error", err);
+    }), this.emit("close", {
       reason: event.reason,
       code: event.code,
       wasCloseCalled: this.wasCloseCalled
@@ -469,15 +489,25 @@ var Client = class extends EventEmitter {
           break;
         }
         case "gigantified-emote-message": {
+          let finalEmote, getEmote = () => {
+            if (finalEmote)
+              return finalEmote;
+            if (!tags.emotes.length)
+              throw new Error("No emotes found in gigantified emote message");
+            let _finalEmote = tags.emotes[0], finalIndex = _finalEmote.indices.at(-1)[1];
+            for (let i = 1; i < tags.emotes.length; i++) {
+              let emote = tags.emotes[i], emoteIndex = emote.indices.at(-1)[1];
+              emoteIndex > finalIndex && (finalEmote = emote, finalIndex = emoteIndex);
+            }
+            return finalEmote = _finalEmote, finalEmote;
+          };
           reward = {
             type: "gigantifiedEmote",
+            get emote() {
+              return getEmote();
+            },
             get emoteId() {
-              let finalEmote = tags.emotes[0], finalIndex = finalEmote.indices[finalEmote.indices.length - 1][1];
-              for (let i = 1; i < tags.emotes.length; i++) {
-                let emote = tags.emotes[i], lastIndex = emote.indices[emote.indices.length - 1][1];
-                lastIndex > finalIndex && (finalEmote = emote, finalIndex = lastIndex);
-              }
-              return finalEmote.id;
+              return getEmote().id;
             }
           };
           break;
@@ -529,6 +559,7 @@ var Client = class extends EventEmitter {
       display: tags.displayName,
       badges: tags.badges,
       badgeInfo: tags.badgeInfo,
+      isBot: tags.badges.has("bot-badge"),
       isBroadcaster: tags.badges.has("broadcaster"),
       isMod: tags.mod,
       isSubscriber: tags.subscriber,
@@ -664,6 +695,7 @@ var Client = class extends EventEmitter {
             login: tags.msgParamRecipientUserName,
             display: tags.msgParamRecipientDisplayName
           },
+          cumulativeMonths: tags.msgParamMonths,
           plan: {
             name: tags.msgParamSubPlanName,
             plan: tags.msgParamSubPlan,
@@ -853,6 +885,24 @@ var Client = class extends EventEmitter {
         });
         break;
       }
+      case "socialsharingbadge": {
+        this.emit("badgeUpgrade", {
+          channel,
+          user,
+          type: "socialSharing",
+          threshold: tags.msgParamCurrentBadgeLevel,
+          tags,
+          message: {
+            id: tags.id,
+            text,
+            flags: tags.flags,
+            emotes: tags.emotes,
+            isAction: !1,
+            isFirst: "firstMsg" in tags && tags.firstMsg === !0
+          }
+        });
+        break;
+      }
       case "viewermilestone": {
         this.emit("viewerMilestone", {
           channel,
@@ -920,6 +970,7 @@ var Client = class extends EventEmitter {
         break;
       // Messages that mean a sent message was dropped
       case "msg_channel_suspended":
+      case "msg_banned_phone_number_alias":
       case "msg_duplicate":
       case "msg_timedout":
       case "unrecognized_cmd":
@@ -1017,8 +1068,13 @@ var Client = class extends EventEmitter {
       }
     });
   }
-  handleRECONNECT(ircMessage) {
-    this.reconnect();
+  async handleRECONNECT(ircMessage) {
+    if (!this.keepalive.cancelReconnect)
+      try {
+        await this.reconnect("RECONNECT command received");
+      } catch (err) {
+        this.emit("error", err);
+      }
   }
   handle376(ircMessage) {
     this.identity.name = ircMessage.params[0], this.emit("connect"), this.joinPendingChannels();
@@ -1086,7 +1142,9 @@ var Client = class extends EventEmitter {
     return `tmi.js-${globalThis.crypto?.randomUUID?.() ?? Math.random().toString(16).slice(2)}`;
   }
   ping() {
-    this.keepalive.lastPingSent = Date.now(), this.sendIrc({ command: "PING" }), this.keepalive.pingTimeout = setTimeout(() => this.reconnect(), this.keepalive.pingTimeoutSeconds * 1e3);
+    this.keepalive.lastPingSent = Date.now(), this.sendIrc({ command: "PING" }), this.keepalive.pingTimeout = setTimeout(() => {
+      this.reconnect("Ping timeout exceeded");
+    }, this.keepalive.pingTimeoutSeconds * 1e3);
   }
   async joinPendingChannels() {
     for (let channel of this.channelsPendingJoin)

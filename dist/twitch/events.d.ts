@@ -14,6 +14,7 @@ interface UserExtra extends User {
     color: string;
     badges: Badges;
     badgeInfo: BadgeInfo;
+    isBot: boolean;
     isBroadcaster: boolean;
     isMod: boolean;
     isSubscriber: boolean;
@@ -59,7 +60,8 @@ export declare namespace Message {
     }
     interface Reward_GigantifiedEmote {
         type: 'gigantifiedEmote';
-        emoteId: string;
+        emote: Emote;
+        emoteId: Emote['id'];
     }
     interface Reward_MessageEffects {
         type: 'messageEffects';
@@ -102,9 +104,9 @@ export declare namespace Message {
         tags: TagsAnnouncement;
     }
     export interface EventBadgeUpgrade extends BaseEvent {
-        type: 'bits';
+        type: 'bits' | 'socialSharing';
         threshold: number;
-        tags: USERNOTICE.TagsBitsBadgeTier;
+        tags: USERNOTICE.TagsBitsBadgeTier | USERNOTICE.TagsSocialSharingBadge;
     }
     export type Event = EventRegular | EventAnnouncement;
     export {};
@@ -202,7 +204,7 @@ export declare namespace Subscription {
         plan: SubPlan;
         multiMonth: {
             /**
-             * Total number of months the recurring subscription
+             * Total number of months for the recurring subscription
              */
             duration: TagType.msgParamMultimonthDuration;
             /**
@@ -229,6 +231,8 @@ export declare namespace Subscription {
     export interface EventSubGift extends EventBase<'subGift'>, EventGoalBase {
         /** The user who received the gift. */
         recipient: User;
+        /** The recipient's total months subscribed, including this gift. */
+        cumulativeMonths: TagType.msgParamMonths;
         plan: SubPlan;
         gift: {
             /** Number of months the gift recipient will receive. */
@@ -319,7 +323,7 @@ export declare namespace Moderation {
 export declare namespace Combos {
     interface EventBase<Type> {
         type: Type;
-        /** `'heart' | 'awww' | 'dino' | 'horselul'` */
+        /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
         theme: string;
         channel: Channel;
         timestamp: TagType.tmiSentTs;
