@@ -832,6 +832,24 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				});
 				break;
 			}
+			case 'socialsharingbadge': {
+				this.emit('badgeUpgrade', {
+					channel,
+					user,
+					type: 'socialSharing',
+					threshold: tags.msgParamCurrentBadgeLevel,
+					tags,
+					message: {
+						id: tags.id,
+						text,
+						flags: tags.flags,
+						emotes: tags.emotes,
+						isAction: false,
+						isFirst: 'firstMsg' in tags && tags.firstMsg === true
+					},
+				});
+				break;
+			}
 			case 'viewermilestone': {
 				this.emit('viewerMilestone', {
 					channel,

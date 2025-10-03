@@ -126,9 +126,13 @@ export namespace Message {
 		tags: TagsAnnouncement;
 	}
 	export interface EventBadgeUpgrade extends BaseEvent {
-		type: 'bits';
+		type:
+			| 'bits'
+			| 'socialSharing';
 		threshold: number;
-		tags: USERNOTICE.TagsBitsBadgeTier
+		tags:
+			| USERNOTICE.TagsBitsBadgeTier
+			| USERNOTICE.TagsSocialSharingBadge;
 	}
 	export type Event = EventRegular | EventAnnouncement;
 }

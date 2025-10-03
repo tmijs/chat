@@ -418,6 +418,12 @@ export namespace USERNOTICE {
 		msgParamThreshold: TagType.msgParamThreshold;
 	}
 	/**
+	 * @example `Unlocked a social sharing badge`
+	 */
+	export interface TagsSocialSharingBadge extends BaseTags<'socialsharingbadge'> {
+		msgParamCurrentBadgeLevel: TagType.msgParamCurrentBadgeLevel;
+	}
+	/**
 	 * @example `{string} watched {number} consecutive streams this month and sparked a watch streak!`
 	 */
 	export interface TagsViewerMilestone extends BaseTags<'viewermilestone'> {
@@ -450,6 +456,7 @@ export namespace USERNOTICE {
 		| TagsOneTapStreakExpired
 		| TagsOneTapBreakpointAchieved
 		| TagsBitsBadgeTier
+		| TagsSocialSharingBadge
 		| TagsViewerMilestone
 		| TagsSharedChatNotice;
 	export type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [ message: string ]>;
@@ -548,6 +555,7 @@ export namespace TagType {
 	export type msgParamContributor3Taps = number;
 	export type msgParamCopoReward = number;
 	export type msgParamCumulativeMonths = number;
+	export type msgParamCurrentBadgeLevel = number;
 	export type msgParamGiftMonthBeingRedeemed = number;
 	export type msgParamGiftMonths = number;
 	export type msgParamGoalCurrentContributions = number;
@@ -695,6 +703,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamContributor3Taps':
 		case 'msgParamCopoReward': // "msg-param-copoReward"
 		case 'msgParamCumulativeMonths':
+		case 'msgParamCurrentBadgeLevel':
 		case 'msgParamGiftMatchBonusCount':
 		case 'msgParamGiftMatchExtraCount':
 		case 'msgParamGiftMonthBeingRedeemed':
