@@ -44,7 +44,7 @@ export type ConnectionEvents = {
 	connect: void;
 	close: { reason: string; code: number; wasCloseCalled: boolean; };
 	socketError: Event;
-	reconnecting: { attempts: number; waitTime: number; };
+	reconnecting: { attempts: number; waitTime: number; reason: string; };
 	pong: void;
 };
 
@@ -103,6 +103,10 @@ interface Keepalive {
 	pingTimeoutSeconds: number;
 	/** The amount of reconnect attempts. */
 	reconnectAttempts: number;
+	/** The timeout ID for the reconnect timeout. */
+	reconnectTimeout?: ReturnType<typeof setTimeout>;
+	/** A function to cancel the current reconnect attempt. Calling this will throw an error for the reconnect caller. */
+	cancelReconnect?: () => void;
 }
 
 type ToTuples<T extends Record<string, any>> = {
@@ -151,15 +155,53 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			this.socket.close();
 		}
 	}
-	async reconnect() {
+	async reconnect(reason: string = 'reconnect called') {
+		if(this.keepalive.reconnectTimeout) {
+			throw new Error('Cannot reconnect while already reconnecting');
+		}
 		this.close();
-		const reconnectWaitTime = Math.min(1000 * 1.23 ** this.keepalive.reconnectAttempts++, 60000);
+		const reconnectWaitTime = Math.min(1000 * 1.23 ** this.keepalive.reconnectAttempts++, 60_000);
 		this.emit('reconnecting', {
 			attempts: this.keepalive.reconnectAttempts,
-			waitTime: reconnectWaitTime
+			waitTime: reconnectWaitTime,
+			reason
 		});
-		await new Promise(resolve => setTimeout(resolve, reconnectWaitTime));
-		this.connect();
+		let hasSettled = false;
+		let resolve: () => void;
+		let reject: (reason: any) => void;
+		const promise = new Promise<void>((res, rej) => {
+			resolve = res;
+			reject = rej;
+		});
+		this.keepalive.cancelReconnect = () => {
+			if(this.keepalive.reconnectTimeout) {
+				clearTimeout(this.keepalive.reconnectTimeout);
+				this.keepalive.reconnectTimeout = undefined;
+			}
+			if(!hasSettled) {
+				hasSettled = true;
+				reject(new Error('Reconnect cancelled'));
+			}
+		};
+		this.keepalive.reconnectTimeout = setTimeout(() => {
+			this.keepalive.cancelReconnect = undefined;
+			this.keepalive.reconnectTimeout = undefined;
+			if(!hasSettled) {
+				hasSettled = true;
+				this.connect();
+				resolve();
+			}
+		}, reconnectWaitTime);
+		try {
+			await promise;
+		} catch(err) {
+			if(this.keepalive.reconnectTimeout) {
+				clearTimeout(this.keepalive.reconnectTimeout);
+			}
+			this.keepalive.cancelReconnect = undefined;
+			this.keepalive.reconnectTimeout = undefined;
+			throw err;
+		}
 	}
 	private onSocketMessage(event: MessageEvent<string>) {
 		event.data.trim().split('\r\n').forEach(line => this.onIrcLine(line));
@@ -168,8 +210,10 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		clearInterval(this.keepalive.pingInterval);
 		clearTimeout(this.keepalive.pingTimeout);
 		this.clearChannels();
-		if(!this.wasCloseCalled) {
-			this.reconnect();
+		if(!this.wasCloseCalled && !this.keepalive.cancelReconnect) {
+			this.reconnect('Socket was closed unexpectedly').catch(err => {
+				this.emit('error', err);
+			});
 		}
 		this.emit('close', {
 			reason: event.reason,
@@ -979,9 +1023,14 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			}
 		});
 	}
-	private handleRECONNECT(ircMessage: IrcMessage) {
-		// TODO:
-		this.reconnect();
+	private async handleRECONNECT(ircMessage: IrcMessage) {
+		if(!this.keepalive.cancelReconnect) {
+			try {
+				await this.reconnect('RECONNECT command received');
+			} catch(err) {
+				this.emit('error', err as Error);
+			}
+		}
 	}
 	private handle376(ircMessage: IrcMessage) {
 		this.identity.name = ircMessage.params[0];
@@ -1067,7 +1116,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	private ping() {
 		this.keepalive.lastPingSent = Date.now();
 		this.sendIrc({ command: 'PING' });
-		this.keepalive.pingTimeout = setTimeout(() => this.reconnect(), this.keepalive.pingTimeoutSeconds * 1000);
+		this.keepalive.pingTimeout = setTimeout(() => {
+			this.reconnect('Ping timeout exceeded');
+		}, this.keepalive.pingTimeoutSeconds * 1000);
 	}
 	private async joinPendingChannels() {
 		for(const channel of this.channelsPendingJoin) {
