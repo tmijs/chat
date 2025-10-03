@@ -904,6 +904,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 
 			// Messages that mean a sent message was dropped
 			case 'msg_channel_suspended':
+			case 'msg_banned_phone_number_alias':
 			case 'msg_duplicate':
 			case 'msg_timedout':
 			case 'unrecognized_cmd':
