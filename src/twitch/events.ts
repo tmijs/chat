@@ -237,7 +237,7 @@ export namespace Subscription {
 		plan: SubPlan;
 		multiMonth: {
 			/**
-			 * Total number of months the recurring subscription
+			 * Total number of months for the recurring subscription
 			 */
 			duration: TagType.msgParamMultimonthDuration;
 			/**
@@ -272,6 +272,8 @@ export namespace Subscription {
 		// msgParamRecipientUserName
 		// msgParamRecipientDisplayName
 		recipient: User;
+		/** The recipient's total months subscribed, including this gift. */
+		cumulativeMonths: TagType.msgParamMonths;
 		plan: SubPlan;
 		gift: {
 			/** Number of months the gift recipient will receive. */
@@ -384,7 +386,7 @@ export namespace Moderation {
 export namespace Combos {
 	export interface EventBase<Type> {
 		type: Type;
-		/** `'heart' | 'awww' | 'dino' | 'horselul'` */
+		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
 		theme: string;
 		channel: Channel;
 		timestamp: TagType.tmiSentTs;

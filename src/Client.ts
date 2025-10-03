@@ -633,6 +633,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						login: tags.msgParamRecipientUserName,
 						display: tags.msgParamRecipientDisplayName
 					},
+					cumulativeMonths: tags.msgParamMonths,
 					plan: {
 						name: tags.msgParamSubPlanName,
 						plan: tags.msgParamSubPlan,
