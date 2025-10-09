@@ -544,7 +544,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
-						isAction: false,
+						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
 					sharedChat: undefined,
@@ -837,7 +837,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
-						isAction: false,
+						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
 				});
@@ -855,7 +855,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
-						isAction: false,
+						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
 				});
