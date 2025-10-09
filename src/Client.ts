@@ -505,8 +505,12 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		});
 	}
 	private handleUSERNOTICE({ tags, channel: channelString, params }: irc.USERNOTICE.IrcMessage) {
-		const text = params[0];
 		const channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString);
+		let text = params[0];
+		const isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+		if(isAction) {
+			text = text.slice(8, -1);
+		}
 		const user = {
 			...getUser(tags),
 			login: tags.login,
