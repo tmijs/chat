@@ -618,7 +618,9 @@ var Client = class extends EventEmitter {
     });
   }
   handleUSERNOTICE({ tags, channel: channelString, params }) {
-    let text = params[0], channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), user = {
+    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), text = params[0], isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+    isAction && (text = text.slice(8, -1));
+    let user = {
       ...getUser(tags),
       login: tags.login,
       isTurbo: "turbo" in tags && tags.turbo === !0,
@@ -642,7 +644,7 @@ var Client = class extends EventEmitter {
             text,
             flags: tags.flags,
             emotes: tags.emotes,
-            isAction: !1,
+            isAction,
             isFirst: "firstMsg" in tags && tags.firstMsg === !0
           },
           sharedChat: void 0,
@@ -692,6 +694,13 @@ var Client = class extends EventEmitter {
           type: "resub",
           channel,
           user,
+          message: {
+            id: tags.id,
+            text,
+            flags: tags.flags,
+            emotes: tags.emotes,
+            isAction
+          },
           cumulativeMonths: tags.msgParamCumulativeMonths,
           multiMonth: {
             duration: tags.msgParamMultimonthDuration ?? 0,
@@ -906,7 +915,7 @@ var Client = class extends EventEmitter {
             text,
             flags: tags.flags,
             emotes: tags.emotes,
-            isAction: !1,
+            isAction,
             isFirst: "firstMsg" in tags && tags.firstMsg === !0
           }
         });
@@ -924,7 +933,7 @@ var Client = class extends EventEmitter {
             text,
             flags: tags.flags,
             emotes: tags.emotes,
-            isAction: !1,
+            isAction,
             isFirst: "firstMsg" in tags && tags.firstMsg === !0
           }
         });

@@ -923,8 +923,12 @@ var tmi = (() => {
       });
     }
     handleUSERNOTICE({ tags, channel: channelString, params }) {
-      const text = params[0];
       const channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString);
+      let text = params[0];
+      const isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+      if (isAction) {
+        text = text.slice(8, -1);
+      }
       const user = {
         ...getUser(tags),
         login: tags.login,
@@ -958,7 +962,7 @@ var tmi = (() => {
               text,
               flags: tags.flags,
               emotes: tags.emotes,
-              isAction: false,
+              isAction,
               isFirst: "firstMsg" in tags && tags.firstMsg === true
             },
             sharedChat: void 0,
@@ -1015,6 +1019,13 @@ var tmi = (() => {
             type: "resub",
             channel,
             user,
+            message: {
+              id: tags.id,
+              text,
+              flags: tags.flags,
+              emotes: tags.emotes,
+              isAction
+            },
             cumulativeMonths: tags.msgParamCumulativeMonths,
             multiMonth: {
               duration: tags.msgParamMultimonthDuration ?? 0,
@@ -1241,7 +1252,7 @@ var tmi = (() => {
               text,
               flags: tags.flags,
               emotes: tags.emotes,
-              isAction: false,
+              isAction,
               isFirst: "firstMsg" in tags && tags.firstMsg === true
             }
           });
@@ -1259,7 +1270,7 @@ var tmi = (() => {
               text,
               flags: tags.flags,
               emotes: tags.emotes,
-              isAction: false,
+              isAction,
               isFirst: "firstMsg" in tags && tags.firstMsg === true
             }
           });
