@@ -603,6 +603,13 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					type: 'resub',
 					channel,
 					user,
+					message: {
+						id: tags.id,
+						text,
+						flags: tags.flags,
+						emotes: tags.emotes,
+						isAction,
+					},
 					cumulativeMonths: tags.msgParamCumulativeMonths,
 					multiMonth: {
 						duration: tags.msgParamMultimonthDuration ?? 0,
