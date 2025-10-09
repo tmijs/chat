@@ -235,7 +235,7 @@ export namespace Subscription {
 		};
 		tags: USERNOTICE.TagsSub;
 	}
-	export interface EventResub extends EventBase<'resub'>, EventGoalBase {
+	export interface EventResub extends EventBase<'resub'> {
 		/** Total months the user has subscribed. */
 		cumulativeMonths: TagType.msgParamCumulativeMonths;
 		plan: SubPlan;
