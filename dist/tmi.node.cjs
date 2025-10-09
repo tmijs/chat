@@ -618,7 +618,7 @@ var Client = class extends EventEmitter {
     });
   }
   handleUSERNOTICE({ tags, channel: channelString, params }) {
-    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), text = params[0], isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+    let channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString), text = params[0] ?? "", isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
     isAction && (text = text.slice(8, -1));
     let user = {
       ...getUser(tags),
