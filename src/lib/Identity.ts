@@ -4,19 +4,27 @@ export default class Identity {
 	name?: string;
 	id?: string;
 	private token?: TokenValue;
+	static normalizeToken(value: string) {
+		if(typeof value === 'string' && value.toLowerCase().startsWith('oauth:')) {
+			value = value.slice('oauth:'.length);
+		}
+		return value;
+	}
 	isAnonymous() {
 		return !this.token || (typeof this.token === 'string' && this.token.trim() === '');
 	}
 	setToken(value: TokenValue) {
-		this.token = value;
+		this.token = typeof value === 'string' ? Identity.normalizeToken(value) : value;
 	}
 	async getToken(): Promise<string> {
-		if (typeof this.token === 'string') {
+		if(typeof this.token === 'string') {
 			return this.token;
-		} else if (typeof this.token === 'function') {
-			const token = await this.token();
-			return token;
-		} else {
+		}
+		else if(typeof this.token === 'function') {
+			const value = await this.token();
+			return Identity.normalizeToken(value);
+		}
+		else {
 			throw new Error('Invalid token');
 		}
 	}
