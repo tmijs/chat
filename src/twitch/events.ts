@@ -398,32 +398,41 @@ export namespace Combos {
 	export interface EventBase<Type> {
 		type: Type;
 		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-		theme: string;
+		theme: TagType.msgParamGiftId;
 		channel: Channel;
 		timestamp: TagType.tmiSentTs;
 	}
+	/** @deprecated */
 	export interface EventStarted extends EventBase<'started'> {
 		streak: {
-			msRemaining: number;
+			msRemaining: TagType.msgParamMsRemaining;
 		};
 		tags: USERNOTICE.TagsOneTapStreakStarted;
 	}
 	export interface ComboContributor {
-		display: string;
-		taps: number;
+		display:
+			| TagType.msgParamContributor1
+			| TagType.msgParamContributor2
+			| TagType.msgParamContributor3;
+		taps:
+			| TagType.msgParamContributor1Taps
+			| TagType.msgParamContributor2Taps
+			| TagType.msgParamContributor3Taps;
 	}
+	/** @deprecated */
 	export interface EventExpired extends EventBase<'expired'> {
 		topContributors: ComboContributor[];
 		streak: {
-			bits: number;
-			taps: number;
+			taps: TagType.msgParamStreakSizeTaps;
+			bits: TagType.msgParamStreakSizeBits;
 		};
 		tags: USERNOTICE.TagsOneTapStreakExpired;
 	}
+	/** @deprecated */
 	export interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
 		threshold: {
-			level: number;
-			bits: number;
+			level: TagType.msgParamBreakpointNumber;
+			bits: TagType.msgParamBreakpointThresholdBits;
 		};
 		tags: USERNOTICE.TagsOneTapBreakpointAchieved;
 	}

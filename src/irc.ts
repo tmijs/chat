@@ -379,6 +379,7 @@ export namespace USERNOTICE {
 	}
 	/**
 	 * @example `Combo started! You have ${number}s left to join.`
+	 * @deprecated
 	 */
 	export interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
 		msgParamGiftId: TagType.msgParamGiftId;
@@ -386,6 +387,7 @@ export namespace USERNOTICE {
 	}
 	/**
 	 * @example `{string}'s community sent ${number}!`
+	 * @deprecated
 	 */
 	export interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
 		msgParamChannelDisplayName: TagType.msgParamChannelDisplayName;
@@ -404,6 +406,7 @@ export namespace USERNOTICE {
 	}
 	/**
 	 * @example `Milestone ${number} achieved!`
+	 * @deprecated
 	 */
 	export interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
 		msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
