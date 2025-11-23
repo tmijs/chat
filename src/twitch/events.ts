@@ -437,6 +437,7 @@ export namespace Combos {
 		tags: USERNOTICE.TagsOneTapBreakpointAchieved;
 	}
 	export interface EventGiftRedeemed extends EventBase<'redeem'> {
+		user: User;
 		bits: TagType.msgParamBitsSpent;
 		tags: USERNOTICE.TagsOneTapGiftRedeemed;
 	}
