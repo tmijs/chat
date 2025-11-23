@@ -1231,6 +1231,7 @@ var tmi = (() => {
           this.emit("combos", {
             type: "redeem",
             channel,
+            user,
             timestamp: tags.tmiSentTs,
             theme: tags.msgParamGiftId,
             bits: tags.msgParamBitsSpent,
