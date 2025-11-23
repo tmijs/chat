@@ -50,22 +50,27 @@ var EventEmitter = class {
 };
 
 // src/lib/Identity.ts
-var Identity = class {
+var Identity = class _Identity {
   name;
   id;
   token;
+  static normalizeToken(value) {
+    return typeof value == "string" && value.toLowerCase().startsWith("oauth:") && (value = value.slice(6)), value;
+  }
   isAnonymous() {
     return !this.token || typeof this.token == "string" && this.token.trim() === "";
   }
   setToken(value) {
-    this.token = value;
+    this.token = typeof value == "string" ? _Identity.normalizeToken(value) : value;
   }
   async getToken() {
     if (typeof this.token == "string")
       return this.token;
-    if (typeof this.token == "function")
-      return await this.token();
-    throw new Error("Invalid token");
+    if (typeof this.token == "function") {
+      let value = await this.token();
+      return _Identity.normalizeToken(value);
+    } else
+      throw new Error("Invalid token");
   }
   [Symbol.for("nodejs.util.inspect.custom")]() {
     let name = this.name ? `"${this.name}"` : "undefined", id = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined", token = this.token ? typeof this.token == "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
@@ -136,6 +141,7 @@ function parseTag(key, value, params) {
     // Integer
     case "banDuration":
     case "bits":
+    case "msgParamBitsSpent":
     case "msgParamBreakpointNumber":
     case "msgParamBreakpointThresholdBits":
     case "msgParamContributor1Taps":
@@ -275,6 +281,7 @@ function parseTag(key, value, params) {
     case "msgParamSenderName":
     case "msgParamSubPlanName":
     case "msgParamSubPlan":
+    case "msgParamUserDisplayName":
     case "msgParamViewerCustomizationId":
     case "replyParentDisplayName":
     case "replyParentMsgBody":
@@ -878,6 +885,17 @@ var Client = class extends EventEmitter {
             level: tags.msgParamBreakpointNumber,
             bits: tags.msgParamBreakpointThresholdBits
           },
+          tags
+        });
+        break;
+      }
+      case "onetapgiftredeemed": {
+        this.emit("combos", {
+          type: "redeem",
+          channel,
+          timestamp: tags.tmiSentTs,
+          theme: tags.msgParamGiftId,
+          bits: tags.msgParamBitsSpent,
           tags
         });
         break;

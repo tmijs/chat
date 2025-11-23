@@ -190,22 +190,28 @@ var EventEmitter = class {
 };
 
 // src/lib/Identity.ts
-var Identity = class {
+var Identity = class _Identity {
   name;
   id;
   token;
+  static normalizeToken(value) {
+    if (typeof value === "string" && value.toLowerCase().startsWith("oauth:")) {
+      value = value.slice("oauth:".length);
+    }
+    return value;
+  }
   isAnonymous() {
     return !this.token || typeof this.token === "string" && this.token.trim() === "";
   }
   setToken(value) {
-    this.token = value;
+    this.token = typeof value === "string" ? _Identity.normalizeToken(value) : value;
   }
   async getToken() {
     if (typeof this.token === "string") {
       return this.token;
     } else if (typeof this.token === "function") {
-      const token = await this.token();
-      return token;
+      const value = await this.token();
+      return _Identity.normalizeToken(value);
     } else {
       throw new Error("Invalid token");
     }
@@ -290,6 +296,7 @@ function parseTag2(key, value, params) {
     // Integer
     case "banDuration":
     case "bits":
+    case "msgParamBitsSpent":
     case "msgParamBreakpointNumber":
     case "msgParamBreakpointThresholdBits":
     case "msgParamContributor1Taps":
@@ -453,6 +460,7 @@ function parseTag2(key, value, params) {
     case "msgParamSenderName":
     case "msgParamSubPlanName":
     case "msgParamSubPlan":
+    case "msgParamUserDisplayName":
     case "msgParamViewerCustomizationId":
     case "replyParentDisplayName":
     case "replyParentMsgBody":
@@ -1185,6 +1193,17 @@ var Client = class extends EventEmitter {
             level: tags.msgParamBreakpointNumber,
             bits: tags.msgParamBreakpointThresholdBits
           },
+          tags
+        });
+        break;
+      }
+      case "onetapgiftredeemed": {
+        this.emit("combos", {
+          type: "redeem",
+          channel,
+          timestamp: tags.tmiSentTs,
+          theme: tags.msgParamGiftId,
+          bits: tags.msgParamBitsSpent,
           tags
         });
         break;

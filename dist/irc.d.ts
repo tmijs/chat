@@ -338,6 +338,7 @@ export declare namespace USERNOTICE {
     }
     /**
      * @example `Combo started! You have ${number}s left to join.`
+     * @deprecated
      */
     interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
         msgParamGiftId: TagType.msgParamGiftId;
@@ -345,6 +346,7 @@ export declare namespace USERNOTICE {
     }
     /**
      * @example `{string}'s community sent ${number}!`
+     * @deprecated
      */
     interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
         msgParamChannelDisplayName: TagType.msgParamChannelDisplayName;
@@ -363,12 +365,22 @@ export declare namespace USERNOTICE {
     }
     /**
      * @example `Milestone ${number} achieved!`
+     * @deprecated
      */
     interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
         msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
         msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
         /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
         msgParamGiftId: TagType.msgParamGiftId;
+    }
+    /**
+     * @example `${string} redeemed ${string} for ${number} Bits`
+     */
+    interface TagsOneTapGiftRedeemed extends BaseTags<'onetapgiftredeemed'> {
+        msgParamBitsSpent: TagType.msgParamBitsSpent;
+        /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
+        msgParamGiftId: TagType.msgParamGiftId;
+        msgParamUserDisplayName: TagType.msgParamUserDisplayName;
     }
     /**
      * @example `bits badge tier notification`
@@ -399,7 +411,7 @@ export declare namespace USERNOTICE {
         sourceOnly: TagType.sourceOnly;
         sourceRoomId: TagType.sourceRoomId;
     }
-    type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsBitsBadgeTier | TagsSocialSharingBadge | TagsViewerMilestone | TagsSharedChatNotice;
+    type Tags = TagsAnnouncement | TagsRaid | TagsUnraid | TagsSub | TagsResub | TagsSubGift | TagsSubMysteryGift | TagsStandardPayForward | TagsCommunityPayForward | TagsGiftPaidUpgrade | TagsPrimePaidUpgrade | TagsOneTapStreakStarted | TagsOneTapStreakExpired | TagsOneTapBreakpointAchieved | TagsOneTapGiftRedeemed | TagsBitsBadgeTier | TagsSocialSharingBadge | TagsViewerMilestone | TagsSharedChatNotice;
     type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [message: string]>;
 }
 export declare namespace NOTICE {
@@ -484,6 +496,7 @@ export declare namespace WHISPER {
 export declare namespace TagType {
     type banDuration = number;
     type bits = number;
+    type msgParamBitsSpent = number;
     type msgParamBreakpointNumber = number;
     type msgParamBreakpointThresholdBits = number;
     type msgParamContributor1Taps = number;
@@ -580,6 +593,7 @@ export declare namespace TagType {
     type msgParamSenderName = string;
     type msgParamSubPlanName = string;
     type msgParamSubPlan = string;
+    type msgParamUserDisplayName = string;
     type msgParamViewerCustomizationId = string;
     type replyParentDisplayName = string;
     type replyParentMsgBody = string;

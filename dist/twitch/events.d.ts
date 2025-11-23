@@ -331,36 +331,43 @@ export declare namespace Combos {
     interface EventBase<Type> {
         type: Type;
         /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-        theme: string;
+        theme: TagType.msgParamGiftId;
         channel: Channel;
         timestamp: TagType.tmiSentTs;
     }
+    /** @deprecated */
     interface EventStarted extends EventBase<'started'> {
         streak: {
-            msRemaining: number;
+            msRemaining: TagType.msgParamMsRemaining;
         };
         tags: USERNOTICE.TagsOneTapStreakStarted;
     }
     interface ComboContributor {
-        display: string;
-        taps: number;
+        display: TagType.msgParamContributor1 | TagType.msgParamContributor2 | TagType.msgParamContributor3;
+        taps: TagType.msgParamContributor1Taps | TagType.msgParamContributor2Taps | TagType.msgParamContributor3Taps;
     }
+    /** @deprecated */
     interface EventExpired extends EventBase<'expired'> {
         topContributors: ComboContributor[];
         streak: {
-            bits: number;
-            taps: number;
+            taps: TagType.msgParamStreakSizeTaps;
+            bits: TagType.msgParamStreakSizeBits;
         };
         tags: USERNOTICE.TagsOneTapStreakExpired;
     }
+    /** @deprecated */
     interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
         threshold: {
-            level: number;
-            bits: number;
+            level: TagType.msgParamBreakpointNumber;
+            bits: TagType.msgParamBreakpointThresholdBits;
         };
         tags: USERNOTICE.TagsOneTapBreakpointAchieved;
     }
-    type Event = EventStarted | EventExpired | EventBreakpointAchieved;
+    interface EventGiftRedeemed extends EventBase<'redeem'> {
+        bits: TagType.msgParamBitsSpent;
+        tags: USERNOTICE.TagsOneTapGiftRedeemed;
+    }
+    type Event = EventStarted | EventExpired | EventBreakpointAchieved | EventGiftRedeemed;
 }
 export declare namespace Raid {
     interface Event {
