@@ -415,6 +415,16 @@ export namespace USERNOTICE {
 		msgParamGiftId: TagType.msgParamGiftId;
 	}
 	/**
+	 * @example `${string} redeemed ${string} for ${number} Bits`
+	 */
+	export interface TagsOneTapGiftRedeemed extends BaseTags<'onetapgiftredeemed'> {
+		msgParamBitsSpent: TagType.msgParamBitsSpent;
+		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
+		msgParamGiftId: TagType.msgParamGiftId;
+		// Superfluous display name
+		msgParamUserDisplayName: TagType.msgParamUserDisplayName;
+	}
+	/**
 	 * @example `bits badge tier notification`
 	 */
 	export interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
@@ -458,6 +468,7 @@ export namespace USERNOTICE {
 		| TagsOneTapStreakStarted
 		| TagsOneTapStreakExpired
 		| TagsOneTapBreakpointAchieved
+		| TagsOneTapGiftRedeemed
 		| TagsBitsBadgeTier
 		| TagsSocialSharingBadge
 		| TagsViewerMilestone
@@ -551,6 +562,7 @@ export namespace TagType {
 	// Integer
 	export type banDuration = number;
 	export type bits = number;
+	export type msgParamBitsSpent = number;
 	export type msgParamBreakpointNumber = number;
 	export type msgParamBreakpointThresholdBits = number;
 	export type msgParamContributor1Taps = number;
@@ -665,6 +677,7 @@ export namespace TagType {
 	export type msgParamSenderName = string;
 	export type msgParamSubPlanName = string;
 	export type msgParamSubPlan = string;
+	export type msgParamUserDisplayName = string;
 	export type msgParamViewerCustomizationId = string;
 	export type replyParentDisplayName = string;
 	export type replyParentMsgBody = string;
@@ -699,6 +712,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		// Integer
 		case 'banDuration':
 		case 'bits':
+		case 'msgParamBitsSpent':
 		case 'msgParamBreakpointNumber':
 		case 'msgParamBreakpointThresholdBits':
 		case 'msgParamContributor1Taps':
@@ -873,6 +887,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamSenderName':
 		case 'msgParamSubPlanName':
 		case 'msgParamSubPlan':
+		case 'msgParamUserDisplayName':
 		case 'msgParamViewerCustomizationId':
 		case 'replyParentDisplayName':
 		case 'replyParentMsgBody':

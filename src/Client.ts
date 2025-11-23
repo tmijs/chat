@@ -804,6 +804,17 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				});
 				break;
 			}
+			case 'onetapgiftredeemed': {
+				this.emit('combos', {
+					type: 'redeem',
+					channel,
+					timestamp: tags.tmiSentTs,
+					theme: tags.msgParamGiftId,
+					bits: tags.msgParamBitsSpent,
+					tags
+				});
+				break;
+			}
 			case 'raid': {
 				this.emit('raid', {
 					channel,

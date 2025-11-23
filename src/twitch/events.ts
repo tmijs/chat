@@ -436,10 +436,15 @@ export namespace Combos {
 		};
 		tags: USERNOTICE.TagsOneTapBreakpointAchieved;
 	}
+	export interface EventGiftRedeemed extends EventBase<'redeem'> {
+		bits: TagType.msgParamBitsSpent;
+		tags: USERNOTICE.TagsOneTapGiftRedeemed;
+	}
 	export type Event =
 		| EventStarted
 		| EventExpired
-		| EventBreakpointAchieved;
+		| EventBreakpointAchieved
+		| EventGiftRedeemed;
 }
 
 export namespace Raid {
