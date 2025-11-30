@@ -231,11 +231,18 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	}
 	private async onSocketOpen(event: Event) {
 		this.keepalive.reconnectAttempts = 0;
+		// "schmoopiie" is the default anonymous token historically. It is the name of the original tmi.js author.
+		let token = 'schmoopiie';
 		let isAnon = this.identity.isAnonymous();
-		const tokenAnonDefault = 'schmoopiie';
-		let token = isAnon ? tokenAnonDefault : `oauth:${await this.identity.getToken()}`;
-		if(!token) {
-			[ isAnon, token ] = [ true, tokenAnonDefault ];
+		if(!isAnon) {
+			const tokenValue = await this.identity.getToken();
+			// If the string is empty or possibly nullish, fallback to being anonymous.
+			if(tokenValue) {
+				token = `oauth:${tokenValue}`;
+			}
+			else {
+				isAnon = true;
+			}
 		}
 		this.didConnectAnonymously = isAnon;
 		this.sendIrc({ command: 'CAP REQ', params: [ 'twitch.tv/commands', 'twitch.tv/tags' ] });
