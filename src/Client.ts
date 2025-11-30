@@ -36,8 +36,13 @@ function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 }
 
 export interface ClientOptions {
-	channels: string[];
 	token: TokenValue;
+	channels: string[];
+	/**
+	 * Set the minimum delay between sending join method calls for channels queued with the Client options or after
+	 * reconnecting. Defaults to `500` milliseconds.
+	 */
+	joinDelayMs: number;
 }
 
 export type ConnectionEvents = {
@@ -122,6 +127,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		reconnectAttempts: 0,
 	};
 	channelsPendingJoin: Set<string>;
+	pendingChannelJoinDelayMs: number = 10_000 / 20;
 	channels = new Set<Channel>();
 	channelsById = new Map<string, Channel>();
 	channelsByLogin = new Map<string, Channel>();
@@ -136,6 +142,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		}, new Set<string>());
 		if(opts?.token) {
 			this.identity.setToken(opts.token);
+		}
+		if(opts?.joinDelayMs !== undefined) {
+			this.pendingChannelJoinDelayMs = opts.joinDelayMs;
 		}
 	}
 	connect() {
@@ -1173,7 +1182,10 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	private async joinPendingChannels() {
 		for(const channel of this.channelsPendingJoin) {
 			try {
-				await this.join(channel);
+				await Promise.all([
+					this.join(channel),
+					new Promise(res => setTimeout(res, Math.max(1, this.pendingChannelJoinDelayMs)))
+				]);
 			} catch(err) {
 				const newError = new Error('Failed to join channel', { cause: err });
 				this.emit('error', newError);
