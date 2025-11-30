@@ -223,11 +223,15 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	}
 	private async onSocketOpen(event: Event) {
 		this.keepalive.reconnectAttempts = 0;
-		const isAnonymous = this.identity.isAnonymous();
-		const token = isAnonymous ? 'schmoopiie' : `oauth:${await this.identity.getToken()}`;
+		let isAnon = this.identity.isAnonymous();
+		const tokenAnonDefault = 'schmoopiie';
+		let token = isAnon ? tokenAnonDefault : `oauth:${await this.identity.getToken()}`;
+		if(!token) {
+			[ isAnon, token ] = [ true, tokenAnonDefault ];
+		}
 		this.sendIrc({ command: 'CAP REQ', params: [ 'twitch.tv/commands', 'twitch.tv/tags' ] });
 		this.sendIrc({ command: 'PASS', params: [ token ] });
-		this.sendIrc({ command: 'NICK', params: [ isAnonymous ? 'justinfan123456' : 'justinfan' ] })
+		this.sendIrc({ command: 'NICK', params: [ isAnon ? 'justinfan123456' : 'justinfan' ] })
 	}
 	private onSocketError(event: Event) {
 		this.emit('socketError', event);
