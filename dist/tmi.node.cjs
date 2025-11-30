@@ -394,8 +394,12 @@ var Client = class extends EventEmitter {
   }
   async onSocketOpen(event) {
     this.keepalive.reconnectAttempts = 0;
-    let isAnon = this.identity.isAnonymous(), tokenAnonDefault = "schmoopiie", token = isAnon ? tokenAnonDefault : `oauth:${await this.identity.getToken()}`;
-    token || ([isAnon, token] = [!0, tokenAnonDefault]), this.didConnectAnonymously = isAnon, this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [token] }), this.sendIrc({ command: "NICK", params: [isAnon ? "justinfan123456" : "justinfan"] });
+    let token = "schmoopiie", isAnon = this.identity.isAnonymous();
+    if (!isAnon) {
+      let tokenValue = await this.identity.getToken();
+      tokenValue ? token = `oauth:${tokenValue}` : isAnon = !0;
+    }
+    this.didConnectAnonymously = isAnon, this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] }), this.sendIrc({ command: "PASS", params: [token] }), this.sendIrc({ command: "NICK", params: [isAnon ? "justinfan123456" : "justinfan"] });
   }
   onSocketError(event) {
     this.emit("socketError", event);
