@@ -19,7 +19,6 @@ function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 	return {
 		id: tags.userId,
 		color: tags.color,
-		// login: tags.login ?? prefix.nick,
 		display: tags.displayName,
 		badges: tags.badges,
 		badgeInfo: tags.badgeInfo,
@@ -30,8 +29,6 @@ function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 		isFounder: tags.badges.has('founder'),
 		isVip: 'vip' in tags && tags.vip === true,
 		type: tags.userType,
-		// isTurbo: 'turbo' in tags && tags.turbo === true,
-		// isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
 	};
 }
 
@@ -838,8 +835,6 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					user: {
 						...getUser(tags),
 						login: tags.msgParamLogin,
-						// isTurbo: 'turbo' in tags && tags.turbo === true,
-						// isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
 					},
 					viewers: tags.msgParamViewerCount,
 					tags
@@ -940,6 +935,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					// ':tmi.twitch.tv NOTICE * :Improperly formatted auth'
 					const error = new Error(`Catatrophic error: ${message}`);
 					this.emit('error', error);
+					break;
 			}
 			return;
 		}
