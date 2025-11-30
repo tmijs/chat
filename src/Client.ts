@@ -126,6 +126,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	channelsById = new Map<string, Channel>();
 	channelsByLogin = new Map<string, Channel>();
 	identity = new Identity();
+	didConnectAnonymously?: boolean;
 	wasCloseCalled = false;
 	constructor(opts?: Partial<ClientOptions>) {
 		super();
@@ -142,6 +143,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			throw new Error('Client is already connected');
 		}
 		this.wasCloseCalled = false;
+		this.didConnectAnonymously = undefined;
 		const socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 		this.socket = socket;
 		socket.onmessage = e => this.onSocketMessage(e);
@@ -229,6 +231,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		if(!token) {
 			[ isAnon, token ] = [ true, tokenAnonDefault ];
 		}
+		this.didConnectAnonymously = isAnon;
 		this.sendIrc({ command: 'CAP REQ', params: [ 'twitch.tv/commands', 'twitch.tv/tags' ] });
 		this.sendIrc({ command: 'PASS', params: [ token ] });
 		this.sendIrc({ command: 'NICK', params: [ isAnon ? 'justinfan123456' : 'justinfan' ] })
@@ -1107,7 +1110,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	async join(channelName: string | Channel) {
 		const channel = typeof channelName === 'string' ? Channel.toIrc(channelName) : channelName.toString();
 		const responder = this.waitForCommand<irc.JOIN.IrcMessage | irc.USERSTATE.IrcMessage>(
-			this.identity.isAnonymous() ? 'JOIN' : 'USERSTATE',
+			this.didConnectAnonymously ? 'JOIN' : 'USERSTATE',
 			m => m.prefix.nick ? m.prefix.nick === this.identity.name : true,
 			{ channelHint: channel }
 		);
