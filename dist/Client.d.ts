@@ -5,8 +5,13 @@ import Channel, { ChannelPlaceholder } from './lib/Channel';
 import * as irc from './irc';
 import type { Combos, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription, SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper } from './twitch/events';
 export interface ClientOptions {
-    channels: string[];
     token: TokenValue;
+    channels: string[];
+    /**
+     * Set the minimum delay between sending join method calls for channels queued with the Client options or after
+     * reconnecting. Defaults to `500` milliseconds.
+     */
+    joinDelayMs: number;
 }
 export type ConnectionEvents = {
     connect: void;
@@ -90,10 +95,12 @@ export declare class Client extends EventEmitter<ToTuples<ClientEvents>> {
     socket?: WebSocket;
     readonly keepalive: Keepalive;
     channelsPendingJoin: Set<string>;
+    pendingChannelJoinDelayMs: number;
     channels: Set<Channel>;
     channelsById: Map<string, Channel>;
     channelsByLogin: Map<string, Channel>;
     identity: Identity;
+    didConnectAnonymously?: boolean;
     wasCloseCalled: boolean;
     constructor(opts?: Partial<ClientOptions>);
     connect(): void;

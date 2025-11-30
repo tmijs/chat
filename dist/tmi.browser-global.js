@@ -527,7 +527,6 @@ var tmi = (() => {
     return {
       id: tags.userId,
       color: tags.color,
-      // login: tags.login ?? prefix.nick,
       display: tags.displayName,
       badges: tags.badges,
       badgeInfo: tags.badgeInfo,
@@ -538,8 +537,6 @@ var tmi = (() => {
       isFounder: tags.badges.has("founder"),
       isVip: "vip" in tags && tags.vip === true,
       type: tags.userType
-      // isTurbo: 'turbo' in tags && tags.turbo === true,
-      // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
     };
   }
   var Client = class extends EventEmitter {
@@ -551,10 +548,12 @@ var tmi = (() => {
       reconnectAttempts: 0
     };
     channelsPendingJoin;
+    pendingChannelJoinDelayMs = 1e4 / 20;
     channels = /* @__PURE__ */ new Set();
     channelsById = /* @__PURE__ */ new Map();
     channelsByLogin = /* @__PURE__ */ new Map();
     identity = new Identity();
+    didConnectAnonymously;
     wasCloseCalled = false;
     constructor(opts) {
       super();
@@ -565,12 +564,16 @@ var tmi = (() => {
       if (opts?.token) {
         this.identity.setToken(opts.token);
       }
+      if (opts?.joinDelayMs !== void 0) {
+        this.pendingChannelJoinDelayMs = opts.joinDelayMs;
+      }
     }
     connect() {
       if (this.isConnected()) {
         throw new Error("Client is already connected");
       }
       this.wasCloseCalled = false;
+      this.didConnectAnonymously = void 0;
       const socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
       this.socket = socket;
       socket.onmessage = (e) => this.onSocketMessage(e);
@@ -652,11 +655,16 @@ var tmi = (() => {
     }
     async onSocketOpen(event) {
       this.keepalive.reconnectAttempts = 0;
-      const isAnonymous = this.identity.isAnonymous();
-      const token = isAnonymous ? "schmoopiie" : `oauth:${await this.identity.getToken()}`;
+      let isAnon = this.identity.isAnonymous();
+      const tokenAnonDefault = "schmoopiie";
+      let token = isAnon ? tokenAnonDefault : `oauth:${await this.identity.getToken()}`;
+      if (!token) {
+        [isAnon, token] = [true, tokenAnonDefault];
+      }
+      this.didConnectAnonymously = isAnon;
       this.sendIrc({ command: "CAP REQ", params: ["twitch.tv/commands", "twitch.tv/tags"] });
       this.sendIrc({ command: "PASS", params: [token] });
-      this.sendIrc({ command: "NICK", params: [isAnonymous ? "justinfan123456" : "justinfan"] });
+      this.sendIrc({ command: "NICK", params: [isAnon ? "justinfan123456" : "justinfan"] });
     }
     onSocketError(event) {
       this.emit("socketError", event);
@@ -1245,8 +1253,6 @@ var tmi = (() => {
             user: {
               ...getUser(tags),
               login: tags.msgParamLogin
-              // isTurbo: 'turbo' in tags && tags.turbo === true,
-              // isReturningChatter: 'returningChatter' in tags && tags.returningChatter === true
             },
             viewers: tags.msgParamViewerCount,
             tags
@@ -1345,6 +1351,7 @@ var tmi = (() => {
           case "Improperly formatted auth":
             const error = new Error(`Catatrophic error: ${message}`);
             this.emit("error", error);
+            break;
         }
         return;
       }
@@ -1518,7 +1525,7 @@ var tmi = (() => {
     async join(channelName) {
       const channel = typeof channelName === "string" ? Channel.toIrc(channelName) : channelName.toString();
       const responder = this.waitForCommand(
-        this.identity.isAnonymous() ? "JOIN" : "USERSTATE",
+        this.didConnectAnonymously ? "JOIN" : "USERSTATE",
         (m) => m.prefix.nick ? m.prefix.nick === this.identity.name : true,
         { channelHint: channel }
       );
@@ -1579,7 +1586,10 @@ var tmi = (() => {
     async joinPendingChannels() {
       for (const channel of this.channelsPendingJoin) {
         try {
-          await this.join(channel);
+          await Promise.all([
+            this.join(channel),
+            new Promise((res) => setTimeout(res, Math.max(1, this.pendingChannelJoinDelayMs)))
+          ]);
         } catch (err) {
           const newError = new Error("Failed to join channel", { cause: err });
           this.emit("error", newError);
