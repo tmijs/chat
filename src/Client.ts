@@ -23,14 +23,14 @@ function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 		badges: tags.badges,
 		badgeInfo: tags.badgeInfo,
 		isBot: tags.badges.has('bot-badge'),
-		isBroadcaster: tags.badges.has('broadcaster'),
+		isBroadcaster: tags.badges.has('broadcaster') || tags.roomId === tags.userId,
 		// The "mod" tag is understood to be deprecated, though not marked that way in documentation. A "lead_moderator"
 		// will likely continue to not have a true mod tag, so badge checking becomes necessary.
 		isMod: tags.badges.has('moderator') || tags.badges.has('lead_moderator') || tags.mod,
 		isLeadMod: tags.badges.has('lead_moderator'),
-		isSubscriber: tags.subscriber,
+		isSubscriber: tags.subscriber || tags.badges.has('subscriber') || tags.badges.has('founder'),
 		isFounder: tags.badges.has('founder'),
-		isVip: 'vip' in tags && tags.vip === true,
+		isVip: ('vip' in tags && tags.vip === true) || tags.badges.has('vip'),
 		type: tags.userType,
 	};
 }
@@ -502,7 +502,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			 * included in case that changes.
 			 */
 			isLeadMod: tags.badges.has('lead_moderator'),
-			isSubscriber: tags.subscriber,
+			isSubscriber: tags.subscriber || tags.badges.has('subscriber') || tags.badges.has('founder'),
 			isFounder: tags.badges.has('founder'),
 			isTurbo: tags.badges.has('turbo'),
 			isVip: tags.badges.has('vip'),
