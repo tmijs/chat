@@ -7,7 +7,7 @@ export interface PrefixHostOnly {
     host: string;
 }
 export type PrefixFull = Record<keyof PrefixHostOnly, string>;
-type KnownBadges = 'bits' | 'bot-badge' | 'broadcaster' | 'founder' | 'moderator' | 'subscriber' | 'staff' | 'turbo' | 'vip';
+export type KnownBadges = 'bits' | 'bot-badge' | 'broadcaster' | 'founder' | 'lead_moderator' | 'moderator' | 'subscriber' | 'staff' | 'turbo' | 'vip';
 export type Badges = Collection<KnownBadges, string>;
 export type BadgeInfo = Collection<'subscriber', string>;
 export type UserType = '' | 'admin' | 'global_mod' | 'mod' | 'staff';

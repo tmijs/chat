@@ -494,18 +494,22 @@ var ACTION_MESSAGE_PREFIX = "ACTION ";
 var ACTION_MESSAGE_SUFFIX = "";
 var ANONYMOUS_GIFTER_LOGIN = "ananonymousgifter";
 function getUser(tags) {
+  const { badges } = tags;
   return {
     id: tags.userId,
     color: tags.color,
     display: tags.displayName,
-    badges: tags.badges,
+    badges,
     badgeInfo: tags.badgeInfo,
-    isBot: tags.badges.has("bot-badge"),
-    isBroadcaster: tags.badges.has("broadcaster"),
-    isMod: tags.mod,
-    isSubscriber: tags.subscriber,
-    isFounder: tags.badges.has("founder"),
-    isVip: "vip" in tags && tags.vip === true,
+    isBot: badges.has("bot-badge"),
+    isBroadcaster: badges.has("broadcaster") || tags.roomId === tags.userId,
+    // The "mod" tag is understood to be deprecated, though not marked that way in documentation. A "lead_moderator"
+    // will likely continue to not have a true mod tag, so badge checking becomes necessary.
+    isMod: badges.has("moderator") || badges.has("lead_moderator") || tags.mod,
+    isLeadMod: badges.has("lead_moderator"),
+    isSubscriber: tags.subscriber || badges.has("subscriber") || badges.has("founder"),
+    isFounder: badges.has("founder"),
+    isVip: "vip" in tags && tags.vip === true || badges.has("vip"),
     type: tags.userType
   };
 }
@@ -872,20 +876,26 @@ var Client = class extends EventEmitter {
   }
   handleUSERSTATE({ tags, channel: channelName }) {
     const channel = this.getChannelByLogin(channelName) ?? this.getChannelPlaceholder(void 0, channelName);
+    const { badges } = tags;
     const user = {
       id: this.identity.id,
       color: tags.color,
       login: this.identity.name,
       display: tags.displayName,
-      badges: tags.badges,
+      badges,
       badgeInfo: tags.badgeInfo,
-      isBot: tags.badges.has("bot-badge"),
-      isBroadcaster: tags.badges.has("broadcaster"),
-      isMod: tags.mod,
-      isSubscriber: tags.subscriber,
-      isFounder: tags.badges.has("founder"),
-      isTurbo: tags.badges.has("turbo"),
-      isVip: tags.badges.has("vip"),
+      isBot: badges.has("bot-badge"),
+      isBroadcaster: badges.has("broadcaster"),
+      isMod: badges.has("moderator") || badges.has("lead_moderator") || tags.mod,
+      /**
+       * The USERSTATE does not seem to receive this badge as of writing, so expect this to be false. It has been
+       * included in case that changes.
+       */
+      isLeadMod: badges.has("lead_moderator"),
+      isSubscriber: tags.subscriber || badges.has("subscriber") || badges.has("founder"),
+      isFounder: badges.has("founder"),
+      isTurbo: badges.has("turbo"),
+      isVip: badges.has("vip"),
       type: tags.userType
     };
     channel.lastUserstate = {
