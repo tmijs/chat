@@ -10,11 +10,12 @@ export interface PrefixHostOnly {
 
 export type PrefixFull = Record<keyof PrefixHostOnly, string>;
 
-type KnownBadges =
+export type KnownBadges =
 	| 'bits'
 	| 'bot-badge'
 	| 'broadcaster'
 	| 'founder'
+	| 'lead_moderator'
 	| 'moderator'
 	| 'subscriber'
 	| 'staff'

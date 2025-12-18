@@ -24,7 +24,10 @@ function getUser(tags: irc.PRIVMSG.Tags | irc.USERNOTICE.Tags) {
 		badgeInfo: tags.badgeInfo,
 		isBot: tags.badges.has('bot-badge'),
 		isBroadcaster: tags.badges.has('broadcaster'),
-		isMod: tags.mod,
+		// The "mod" tag is understood to be deprecated, though not marked that way in documentation. A "lead_moderator"
+		// will likely continue to not have a true mod tag, so badge checking becomes necessary.
+		isMod: tags.badges.has('moderator') || tags.badges.has('lead_moderator') || tags.mod,
+		isLeadMod: tags.badges.has('lead_moderator'),
 		isSubscriber: tags.subscriber,
 		isFounder: tags.badges.has('founder'),
 		isVip: 'vip' in tags && tags.vip === true,
@@ -493,7 +496,12 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			badgeInfo: tags.badgeInfo,
 			isBot: tags.badges.has('bot-badge'),
 			isBroadcaster: tags.badges.has('broadcaster'),
-			isMod: tags.mod,
+			isMod: tags.badges.has('moderator') || tags.badges.has('lead_moderator') || tags.mod,
+			/**
+			 * The USERSTATE does not seem to receive this badge as of writing, so expect this to be false. It has been
+			 * included in case that changes.
+			 */
+			isLeadMod: tags.badges.has('lead_moderator'),
 			isSubscriber: tags.subscriber,
 			isFounder: tags.badges.has('founder'),
 			isTurbo: tags.badges.has('turbo'),
