@@ -977,6 +977,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			case 'msg_banned_phone_number_alias':
 			case 'msg_duplicate':
 			case 'msg_timedout':
+			case 'msg_warned':
 			case 'unrecognized_cmd':
 				this.emit('messageDropped', {
 					channel,
