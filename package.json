@@ -1,6 +1,6 @@
 {
   "name": "@tmi.js/chat",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Connect to Twitch IRC chat",
   "keywords": [
     "twitch",
