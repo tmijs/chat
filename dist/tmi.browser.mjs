@@ -503,8 +503,7 @@ function getUser(tags) {
     badgeInfo: tags.badgeInfo,
     isBot: badges.has("bot-badge"),
     isBroadcaster: badges.has("broadcaster") || tags.roomId === tags.userId,
-    // The "mod" tag is understood to be deprecated, though not marked that way in documentation. A "lead_moderator"
-    // will likely continue to not have a true mod tag, so badge checking becomes necessary.
+    // The "mod" tag is understood to be deprecated, though not marked that way in documentation.
     isMod: badges.has("moderator") || badges.has("lead_moderator") || tags.mod,
     isLeadMod: badges.has("lead_moderator"),
     isSubscriber: tags.subscriber || badges.has("subscriber") || badges.has("founder"),
@@ -1359,6 +1358,7 @@ var Client = class extends EventEmitter {
       case "msg_banned_phone_number_alias":
       case "msg_duplicate":
       case "msg_timedout":
+      case "msg_warned":
       case "unrecognized_cmd":
         this.emit("messageDropped", {
           channel,
