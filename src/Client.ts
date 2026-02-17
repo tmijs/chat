@@ -61,7 +61,13 @@ export type OtherEvents = {
 namespace MessageDropped {
 	export interface Event {
 		channel: Channel;
-		reason: string;
+		reason:
+			| 'msg_channel_suspended'
+			| 'msg_banned_phone_number_alias'
+			| 'msg_duplicate'
+			| 'msg_timedout'
+			| 'msg_warned'
+			| 'unrecognized_cmd';
 		systemMessage: string;
 		tags: irc.NOTICE.Tags;
 	}
