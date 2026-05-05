@@ -1203,7 +1203,10 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				);
 				reject(err);
 			}, timeoutMs);
-			timeout.unref?.();
+			// Support unreferencing Node.js timeouts:
+			if(typeof timeout !== 'number' && timeout) {
+				(timeout as { unref?(): void; }).unref?.();
+			}
 			this.on('ircMessage', commandListener);
 			if(failOnDrop) {
 				this.on('messageDropped', dropListener);
