@@ -379,53 +379,6 @@ export namespace USERNOTICE {
 		msgParamSubPlan: Exclude<SubPlanTierString, 'Prime'>;
 	}
 	/**
-	 * @example `Combo started! You have ${number}s left to join.`
-	 * @deprecated
-	 */
-	export interface TagsOneTapStreakStarted extends BaseTags<'onetapstreakstarted'> {
-		msgParamGiftId: TagType.msgParamGiftId;
-		msgParamMsRemaining: TagType.msgParamMsRemaining;
-	}
-	/**
-	 * @example `{string}'s community sent ${number}!`
-	 * @deprecated
-	 */
-	export interface TagsOneTapStreakExpired extends BaseTags<'onetapstreakexpired'> {
-		msgParamChannelDisplayName: TagType.msgParamChannelDisplayName;
-		msgParamContributor1Taps: TagType.msgParamContributor1Taps;
-		msgParamContributor1: TagType.msgParamContributor1;
-		msgParamContributor2Taps?: TagType.msgParamContributor2Taps;
-		msgParamContributor2?: TagType.msgParamContributor2;
-		msgParamContributor3Taps?: TagType.msgParamContributor3Taps;
-		msgParamContributor3?: TagType.msgParamContributor3;
-		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-		msgParamGiftId: TagType.msgParamGiftId;
-		/** `1 | 2 | 3` */
-		msgParamLargestContributorCount: TagType.msgParamLargestContributorCount;
-		msgParamStreakSizeBits: TagType.msgParamStreakSizeBits;
-		msgParamStreakSizeTaps: TagType.msgParamStreakSizeTaps;
-	}
-	/**
-	 * @example `Milestone ${number} achieved!`
-	 * @deprecated
-	 */
-	export interface TagsOneTapBreakpointAchieved extends BaseTags<'onetapbreakpointachieved'> {
-		msgParamBreakpointNumber: TagType.msgParamBreakpointNumber;
-		msgParamBreakpointThresholdBits: TagType.msgParamBreakpointThresholdBits;
-		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-		msgParamGiftId: TagType.msgParamGiftId;
-	}
-	/**
-	 * @example `${string} redeemed ${string} for ${number} Bits`
-	 */
-	export interface TagsOneTapGiftRedeemed extends BaseTags<'onetapgiftredeemed'> {
-		msgParamBitsSpent: TagType.msgParamBitsSpent;
-		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-		msgParamGiftId: TagType.msgParamGiftId;
-		// Superfluous display name
-		msgParamUserDisplayName: TagType.msgParamUserDisplayName;
-	}
-	/**
 	 * @example `bits badge tier notification`
 	 */
 	export interface TagsBitsBadgeTier extends BaseTags<'bitsbadgetier'> {
@@ -466,10 +419,6 @@ export namespace USERNOTICE {
 		| TagsCommunityPayForward
 		| TagsGiftPaidUpgrade
 		| TagsPrimePaidUpgrade
-		| TagsOneTapStreakStarted
-		| TagsOneTapStreakExpired
-		| TagsOneTapBreakpointAchieved
-		| TagsOneTapGiftRedeemed
 		| TagsBitsBadgeTier
 		| TagsSocialSharingBadge
 		| TagsViewerMilestone
@@ -563,12 +512,6 @@ export namespace TagType {
 	// Integer
 	export type banDuration = number;
 	export type bits = number;
-	export type msgParamBitsSpent = number;
-	export type msgParamBreakpointNumber = number;
-	export type msgParamBreakpointThresholdBits = number;
-	export type msgParamContributor1Taps = number;
-	export type msgParamContributor2Taps = number;
-	export type msgParamContributor3Taps = number;
 	export type msgParamCopoReward = number;
 	export type msgParamCumulativeMonths = number;
 	export type msgParamCurrentBadgeLevel = number;
@@ -577,16 +520,12 @@ export namespace TagType {
 	export type msgParamGoalCurrentContributions = number;
 	export type msgParamGoalTargetContributions = number;
 	export type msgParamGoalUserContributions = number;
-	export type msgParamLargestContributorCount = number;
 	export type msgParamMassGiftCount = number;
 	export type msgParamMonths = number;
-	export type msgParamMsRemaining = number;
 	export type msgParamMultimonthDuration = number;
 	export type msgParamMultimonthTenure = number;
 	export type msgParamSenderCount = number;
 	export type msgParamStreakMonths = number;
-	export type msgParamStreakSizeBits = number;
-	export type msgParamStreakSizeTaps = number;
 	export type msgParamThreshold = number;
 	export type msgParamValue = number;
 	export type msgParamViewerCount = number;
@@ -645,15 +584,10 @@ export namespace TagType {
 	export type messageId = string;
 	export type msgId = string;
 	export type msgParamCategory = string;
-	export type msgParamChannelDisplayName = string;
 	export type msgParamColor = string;
 	export type msgParamCommunityGiftId = string;
-	export type msgParamContributor1 = string;
-	export type msgParamContributor2 = string;
-	export type msgParamContributor3 = string;
 	export type msgParamDisplayName = string;
 	export type msgParamFunString = string;
-	export type msgParamGiftId = string;
 	export type msgParamGiftMatch = string;
 	export type msgParamGiftMatchBonusCount = number;
 	export type msgParamGiftMatchExtraCount = number;
@@ -678,7 +612,6 @@ export namespace TagType {
 	export type msgParamSenderName = string;
 	export type msgParamSubPlanName = string;
 	export type msgParamSubPlan = string;
-	export type msgParamUserDisplayName = string;
 	export type msgParamViewerCustomizationId = string;
 	export type replyParentDisplayName = string;
 	export type replyParentMsgBody = string;
@@ -713,12 +646,6 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		// Integer
 		case 'banDuration':
 		case 'bits':
-		case 'msgParamBitsSpent':
-		case 'msgParamBreakpointNumber':
-		case 'msgParamBreakpointThresholdBits':
-		case 'msgParamContributor1Taps':
-		case 'msgParamContributor2Taps':
-		case 'msgParamContributor3Taps':
 		case 'msgParamCopoReward': // "msg-param-copoReward"
 		case 'msgParamCumulativeMonths':
 		case 'msgParamCurrentBadgeLevel':
@@ -729,16 +656,12 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamGoalCurrentContributions':
 		case 'msgParamGoalTargetContributions':
 		case 'msgParamGoalUserContributions':
-		case 'msgParamLargestContributorCount':
 		case 'msgParamMassGiftCount':
 		case 'msgParamMonths':
-		case 'msgParamMsRemaining':
 		case 'msgParamMultimonthDuration':
 		case 'msgParamMultimonthTenure':
 		case 'msgParamSenderCount':
 		case 'msgParamStreakMonths':
-		case 'msgParamStreakSizeBits':
-		case 'msgParamStreakSizeTaps':
 		case 'msgParamThreshold':
 		case 'msgParamValue':
 		case 'msgParamViewerCount': // "msg-param-viewerCount"
@@ -858,15 +781,10 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'messageId':
 		case 'msgId':
 		case 'msgParamCategory':
-		case 'msgParamChannelDisplayName':
 		case 'msgParamColor':
 		case 'msgParamCommunityGiftId':
-		case 'msgParamContributor1':
-		case 'msgParamContributor2':
-		case 'msgParamContributor3':
 		case 'msgParamDisplayName': // "msg-param-displayName"
 		case 'msgParamFunString':
-		case 'msgParamGiftId':
 		case 'msgParamGiftMatch':
 		case 'msgParamGiftMatchGifterDisplayName':
 		case 'msgParamGiftTheme':
@@ -888,7 +806,6 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamSenderName':
 		case 'msgParamSubPlanName':
 		case 'msgParamSubPlan':
-		case 'msgParamUserDisplayName':
 		case 'msgParamViewerCustomizationId':
 		case 'replyParentDisplayName':
 		case 'replyParentMsgBody':

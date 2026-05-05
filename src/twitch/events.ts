@@ -394,60 +394,6 @@ export namespace Moderation {
 		| EventDeleteMessage;
 }
 
-export namespace Combos {
-	export interface EventBase<Type> {
-		type: Type;
-		/** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-		theme: TagType.msgParamGiftId;
-		channel: Channel;
-		timestamp: TagType.tmiSentTs;
-	}
-	/** @deprecated */
-	export interface EventStarted extends EventBase<'started'> {
-		streak: {
-			msRemaining: TagType.msgParamMsRemaining;
-		};
-		tags: USERNOTICE.TagsOneTapStreakStarted;
-	}
-	export interface ComboContributor {
-		display:
-			| TagType.msgParamContributor1
-			| TagType.msgParamContributor2
-			| TagType.msgParamContributor3;
-		taps:
-			| TagType.msgParamContributor1Taps
-			| TagType.msgParamContributor2Taps
-			| TagType.msgParamContributor3Taps;
-	}
-	/** @deprecated */
-	export interface EventExpired extends EventBase<'expired'> {
-		topContributors: ComboContributor[];
-		streak: {
-			taps: TagType.msgParamStreakSizeTaps;
-			bits: TagType.msgParamStreakSizeBits;
-		};
-		tags: USERNOTICE.TagsOneTapStreakExpired;
-	}
-	/** @deprecated */
-	export interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
-		threshold: {
-			level: TagType.msgParamBreakpointNumber;
-			bits: TagType.msgParamBreakpointThresholdBits;
-		};
-		tags: USERNOTICE.TagsOneTapBreakpointAchieved;
-	}
-	export interface EventGiftRedeemed extends EventBase<'redeem'> {
-		user: User;
-		bits: TagType.msgParamBitsSpent;
-		tags: USERNOTICE.TagsOneTapGiftRedeemed;
-	}
-	export type Event =
-		| EventStarted
-		| EventExpired
-		| EventBreakpointAchieved
-		| EventGiftRedeemed;
-}
-
 export namespace Raid {
 	export interface Event {
 		channel: Channel;

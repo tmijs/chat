@@ -5,7 +5,7 @@ import Identity, { type TokenValue } from './lib/Identity';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 import * as irc from './irc';
 import type {
-	Combos, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
+	GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
 	SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper,
 } from './twitch/events';
 import type { Emote } from './types';
@@ -84,7 +84,6 @@ export type ChatEvents = {
 	raid: Raid.Event;
 	unraid: Unraid.Event;
 	sub: Subscription.Event;
-	combos: Combos.Event;
 	badgeUpgrade: Message.EventBadgeUpgrade;
 	viewerMilestone: ViewerMilestone.Event;
 	sharedChatNotice: SharedChatNotice.Event;
@@ -784,69 +783,6 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						tier: getTier(tags.msgParamSubPlan),
 						isPrime: false
 					},
-					tags
-				});
-				break;
-			}
-			case 'onetapstreakstarted': {
-				this.emit('combos', {
-					type: 'started',
-					channel,
-					timestamp: tags.tmiSentTs,
-					theme: tags.msgParamGiftId,
-					streak: {
-						msRemaining: tags.msgParamMsRemaining,
-					},
-					tags
-				});
-				break;
-			}
-			case 'onetapstreakexpired': {
-				const topContributors: Combos.EventExpired['topContributors'] = [];
-				const addContributor = (display?: string, taps?: number) => {
-					if(display && taps) {
-						topContributors.push({ display, taps });
-					}
-				};
-				addContributor(tags.msgParamContributor1, tags.msgParamContributor1Taps);
-				addContributor(tags.msgParamContributor2, tags.msgParamContributor2Taps);
-				addContributor(tags.msgParamContributor3, tags.msgParamContributor3Taps);
-				this.emit('combos', {
-					type: 'expired',
-					channel,
-					timestamp: tags.tmiSentTs,
-					theme: tags.msgParamGiftId,
-					streak: {
-						bits: tags.msgParamStreakSizeBits,
-						taps: tags.msgParamStreakSizeTaps,
-					},
-					topContributors,
-					tags
-				});
-				break;
-			}
-			case 'onetapbreakpointachieved': {
-				this.emit('combos', {
-					type: 'breakpointAchieved',
-					channel,
-					timestamp: tags.tmiSentTs,
-					theme: tags.msgParamGiftId,
-					threshold: {
-						level: tags.msgParamBreakpointNumber,
-						bits: tags.msgParamBreakpointThresholdBits,
-					},
-					tags
-				});
-				break;
-			}
-			case 'onetapgiftredeemed': {
-				this.emit('combos', {
-					type: 'redeem',
-					channel,
-					user,
-					timestamp: tags.tmiSentTs,
-					theme: tags.msgParamGiftId,
-					bits: tags.msgParamBitsSpent,
 					tags
 				});
 				break;
