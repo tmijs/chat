@@ -907,14 +907,25 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				break;
 			}
 			case 'viewermilestone': {
+				// Allow future categories to populate the type
+				const isValidMilestoneType = (category: string): category is ViewerMilestone.Event['type'] => {
+					return category !== '';
+				}
 				this.emit('viewerMilestone', {
 					channel,
 					user,
-					type: tags.msgParamCategory,
+					type: isValidMilestoneType(tags.msgParamCategory) ? tags.msgParamCategory : 'watch-streak',
 					milestone: {
 						id: tags.msgParamId,
 						value: tags.msgParamValue,
 						reward: tags.msgParamCopoReward
+					},
+					message: {
+						id: tags.id,
+						text,
+						flags: tags.flags,
+						emotes: tags.emotes,
+						isAction,
 					},
 					tags,
 				});

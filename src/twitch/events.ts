@@ -470,11 +470,18 @@ export namespace ViewerMilestone {
 		user: UserExtra;
 	}
 	export interface Event extends BaseEvent {
-		type: TagType.msgParamCategory;
+		type: 'watch-streak';
 		milestone: {
 			id: TagType.msgParamId;
 			value: TagType.msgParamValue;
 			reward: TagType.msgParamCopoReward;
+		};
+		message: {
+			id: TagType.id;
+			text: string;
+			flags: MessageFlag[];
+			emotes: Emote[];
+			isAction: boolean;
 		};
 		tags: USERNOTICE.TagsViewerMilestone;
 	}
