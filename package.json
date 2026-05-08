@@ -10,7 +10,10 @@
   ],
   "author": "Alca <jacob@alca.tv>",
   "homepage": "https://github.com/tmijs/chat#readme",
-  "repository": "github:tmijs/chat",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmijs/chat.git"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/tmi.node.mjs",
