@@ -246,7 +246,7 @@ var tmi = (() => {
         throw new Error("Invalid token");
       }
     }
-    [Symbol.for("nodejs.util.inspect.custom")]() {
+    [/* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom")]() {
       const name = this.name ? `"${this.name}"` : "undefined";
       const id = this.id ? `"${this.id}"` : this.id === "" ? '""' : "undefined";
       const token = this.token ? typeof this.token === "string" ? this.token === "" ? '""' : "[hidden]" : "[hidden function]" : "undefined";
@@ -262,6 +262,8 @@ var tmi = (() => {
       this.id = _id;
       this.login = _login;
     }
+    _id;
+    _login;
     static toLogin(channelName) {
       const name = channelName.trim().toLowerCase();
       return name.startsWith("#") ? name.slice(1) : name;
@@ -326,12 +328,6 @@ var tmi = (() => {
       // Integer
       case "banDuration":
       case "bits":
-      case "msgParamBitsSpent":
-      case "msgParamBreakpointNumber":
-      case "msgParamBreakpointThresholdBits":
-      case "msgParamContributor1Taps":
-      case "msgParamContributor2Taps":
-      case "msgParamContributor3Taps":
       case "msgParamCopoReward":
       // "msg-param-copoReward"
       case "msgParamCumulativeMonths":
@@ -343,16 +339,12 @@ var tmi = (() => {
       case "msgParamGoalCurrentContributions":
       case "msgParamGoalTargetContributions":
       case "msgParamGoalUserContributions":
-      case "msgParamLargestContributorCount":
       case "msgParamMassGiftCount":
       case "msgParamMonths":
-      case "msgParamMsRemaining":
       case "msgParamMultimonthDuration":
       case "msgParamMultimonthTenure":
       case "msgParamSenderCount":
       case "msgParamStreakMonths":
-      case "msgParamStreakSizeBits":
-      case "msgParamStreakSizeTaps":
       case "msgParamThreshold":
       case "msgParamValue":
       case "msgParamViewerCount":
@@ -459,16 +451,11 @@ var tmi = (() => {
       case "messageId":
       case "msgId":
       case "msgParamCategory":
-      case "msgParamChannelDisplayName":
       case "msgParamColor":
       case "msgParamCommunityGiftId":
-      case "msgParamContributor1":
-      case "msgParamContributor2":
-      case "msgParamContributor3":
       case "msgParamDisplayName":
       // "msg-param-displayName"
       case "msgParamFunString":
-      case "msgParamGiftId":
       case "msgParamGiftMatch":
       case "msgParamGiftMatchGifterDisplayName":
       case "msgParamGiftTheme":
@@ -490,7 +477,6 @@ var tmi = (() => {
       case "msgParamSenderName":
       case "msgParamSubPlanName":
       case "msgParamSubPlan":
-      case "msgParamUserDisplayName":
       case "msgParamViewerCustomizationId":
       case "replyParentDisplayName":
       case "replyParentMsgBody":
@@ -1197,69 +1183,6 @@ var tmi = (() => {
           });
           break;
         }
-        case "onetapstreakstarted": {
-          this.emit("combos", {
-            type: "started",
-            channel,
-            timestamp: tags.tmiSentTs,
-            theme: tags.msgParamGiftId,
-            streak: {
-              msRemaining: tags.msgParamMsRemaining
-            },
-            tags
-          });
-          break;
-        }
-        case "onetapstreakexpired": {
-          const topContributors = [];
-          const addContributor = (display, taps) => {
-            if (display && taps) {
-              topContributors.push({ display, taps });
-            }
-          };
-          addContributor(tags.msgParamContributor1, tags.msgParamContributor1Taps);
-          addContributor(tags.msgParamContributor2, tags.msgParamContributor2Taps);
-          addContributor(tags.msgParamContributor3, tags.msgParamContributor3Taps);
-          this.emit("combos", {
-            type: "expired",
-            channel,
-            timestamp: tags.tmiSentTs,
-            theme: tags.msgParamGiftId,
-            streak: {
-              bits: tags.msgParamStreakSizeBits,
-              taps: tags.msgParamStreakSizeTaps
-            },
-            topContributors,
-            tags
-          });
-          break;
-        }
-        case "onetapbreakpointachieved": {
-          this.emit("combos", {
-            type: "breakpointAchieved",
-            channel,
-            timestamp: tags.tmiSentTs,
-            theme: tags.msgParamGiftId,
-            threshold: {
-              level: tags.msgParamBreakpointNumber,
-              bits: tags.msgParamBreakpointThresholdBits
-            },
-            tags
-          });
-          break;
-        }
-        case "onetapgiftredeemed": {
-          this.emit("combos", {
-            type: "redeem",
-            channel,
-            user,
-            timestamp: tags.tmiSentTs,
-            theme: tags.msgParamGiftId,
-            bits: tags.msgParamBitsSpent,
-            tags
-          });
-          break;
-        }
         case "raid": {
           this.emit("raid", {
             channel,
@@ -1316,14 +1239,24 @@ var tmi = (() => {
           break;
         }
         case "viewermilestone": {
+          const isValidMilestoneType = (category) => {
+            return category !== "";
+          };
           this.emit("viewerMilestone", {
             channel,
             user,
-            type: tags.msgParamCategory,
+            type: isValidMilestoneType(tags.msgParamCategory) ? tags.msgParamCategory : "watch-streak",
             milestone: {
               id: tags.msgParamId,
               value: tags.msgParamValue,
               reward: tags.msgParamCopoReward
+            },
+            message: {
+              id: tags.id,
+              text,
+              flags: tags.flags,
+              emotes: tags.emotes,
+              isAction
             },
             tags
           });
@@ -1643,7 +1576,9 @@ var tmi = (() => {
           );
           reject(err);
         }, timeoutMs);
-        timeout.unref?.();
+        if (typeof timeout !== "number" && timeout) {
+          timeout.unref?.();
+        }
         this.on("ircMessage", commandListener);
         if (failOnDrop) {
           this.on("messageDropped", dropListener);

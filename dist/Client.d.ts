@@ -3,7 +3,7 @@ import EventEmitter from './lib/EventEmitter';
 import Identity, { type TokenValue } from './lib/Identity';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
 import * as irc from './irc';
-import type { Combos, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription, SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper } from './twitch/events';
+import type { GlobalUserState, Message, Moderation, RoomState, Raid, Subscription, SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper } from './twitch/events';
 export interface ClientOptions {
     token: TokenValue;
     channels: string[];
@@ -35,7 +35,7 @@ export type OtherEvents = {
 declare namespace MessageDropped {
     interface Event {
         channel: Channel;
-        reason: string;
+        reason: 'msg_channel_suspended' | 'msg_banned_phone_number_alias' | 'msg_duplicate' | 'msg_timedout' | 'msg_warned' | 'unrecognized_cmd';
         systemMessage: string;
         tags: irc.NOTICE.Tags;
     }
@@ -51,7 +51,6 @@ export type ChatEvents = {
     raid: Raid.Event;
     unraid: Unraid.Event;
     sub: Subscription.Event;
-    combos: Combos.Event;
     badgeUpgrade: Message.EventBadgeUpgrade;
     viewerMilestone: ViewerMilestone.Event;
     sharedChatNotice: SharedChatNotice.Event;

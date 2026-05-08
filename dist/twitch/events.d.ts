@@ -327,49 +327,6 @@ export declare namespace Moderation {
     }
     type Event = EventClearChat | EventTimeout | EventBan | EventDeleteMessage;
 }
-export declare namespace Combos {
-    interface EventBase<Type> {
-        type: Type;
-        /** `'heart' | 'awww' | 'dino' | 'horselul' | 'fail' | 'mindblown'` */
-        theme: TagType.msgParamGiftId;
-        channel: Channel;
-        timestamp: TagType.tmiSentTs;
-    }
-    /** @deprecated */
-    interface EventStarted extends EventBase<'started'> {
-        streak: {
-            msRemaining: TagType.msgParamMsRemaining;
-        };
-        tags: USERNOTICE.TagsOneTapStreakStarted;
-    }
-    interface ComboContributor {
-        display: TagType.msgParamContributor1 | TagType.msgParamContributor2 | TagType.msgParamContributor3;
-        taps: TagType.msgParamContributor1Taps | TagType.msgParamContributor2Taps | TagType.msgParamContributor3Taps;
-    }
-    /** @deprecated */
-    interface EventExpired extends EventBase<'expired'> {
-        topContributors: ComboContributor[];
-        streak: {
-            taps: TagType.msgParamStreakSizeTaps;
-            bits: TagType.msgParamStreakSizeBits;
-        };
-        tags: USERNOTICE.TagsOneTapStreakExpired;
-    }
-    /** @deprecated */
-    interface EventBreakpointAchieved extends EventBase<'breakpointAchieved'> {
-        threshold: {
-            level: TagType.msgParamBreakpointNumber;
-            bits: TagType.msgParamBreakpointThresholdBits;
-        };
-        tags: USERNOTICE.TagsOneTapBreakpointAchieved;
-    }
-    interface EventGiftRedeemed extends EventBase<'redeem'> {
-        user: User;
-        bits: TagType.msgParamBitsSpent;
-        tags: USERNOTICE.TagsOneTapGiftRedeemed;
-    }
-    type Event = EventStarted | EventExpired | EventBreakpointAchieved | EventGiftRedeemed;
-}
 export declare namespace Raid {
     interface Event {
         channel: Channel;
@@ -390,11 +347,18 @@ export declare namespace ViewerMilestone {
         user: UserExtra;
     }
     export interface Event extends BaseEvent {
-        type: TagType.msgParamCategory;
+        type: 'watch-streak';
         milestone: {
             id: TagType.msgParamId;
             value: TagType.msgParamValue;
             reward: TagType.msgParamCopoReward;
+        };
+        message: {
+            id: TagType.id;
+            text: string;
+            flags: MessageFlag[];
+            emotes: Emote[];
+            isAction: boolean;
         };
         tags: USERNOTICE.TagsViewerMilestone;
     }
