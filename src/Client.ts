@@ -1079,6 +1079,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			throw new Error('Result message is empty');
 		}
 		this.send(result);
+		return result;
 	}
 	async join(channelName: string | Channel) {
 		const channel = typeof channelName === 'string' ? Channel.toIrc(channelName) : channelName.toString();
