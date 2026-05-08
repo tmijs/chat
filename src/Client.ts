@@ -3,15 +3,13 @@ import type { IrcMessage, FormatMessage, ChannelString } from '@tmi.js/irc-parse
 import EventEmitter from './lib/EventEmitter';
 import Identity, { type TokenValue } from './lib/Identity';
 import Channel, { ChannelPlaceholder } from './lib/Channel';
+import * as util from './lib/util';
 import * as irc from './irc';
 import type {
 	GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
 	SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper,
 } from './twitch/events';
 import type { Emote } from './types';
-
-const ACTION_MESSAGE_PREFIX = '\u0001ACTION ';
-const ACTION_MESSAGE_SUFFIX = '\u0001';
 
 const ANONYMOUS_GIFTER_LOGIN = 'ananonymousgifter';
 
@@ -355,9 +353,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		type E = Message.Event;
 		const channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString);
 		let text = params[0];
-		const isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+		const isAction = util.isActionMessage(text);
 		if(isAction) {
-			text = text.slice(8, -1);
+			text = util.trimActionMessage(text);
 		}
 		let sharedChat: E['sharedChat'];
 		let cheer: E['cheer'];
@@ -541,9 +539,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 	private handleUSERNOTICE({ tags, channel: channelString, params }: irc.USERNOTICE.IrcMessage) {
 		const channel = this.getChannelById(tags.roomId) ?? this.getChannelPlaceholder(tags.roomId, channelString);
 		let text = params[0] ?? '';
-		const isAction = text.startsWith(ACTION_MESSAGE_PREFIX) && text.endsWith(ACTION_MESSAGE_SUFFIX);
+		const isAction = util.isActionMessage(text);
 		if(isAction) {
-			text = text.slice(8, -1);
+			text = util.trimActionMessage(text);
 		}
 		const user = {
 			...getUser(tags),
