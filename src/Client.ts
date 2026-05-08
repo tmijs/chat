@@ -1070,10 +1070,10 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 		}
 		this.socket.send(message);
 	}
-	sendIrc(opts: { channel?: string | Channel; } & Omit<FormatMessage, 'channel'>) {
+	sendIrc(opts: { channel?: FormatMessage['channel'] | Channel | Channel[]; } & Omit<FormatMessage, 'channel'>) {
 		const result = format({
 			...opts,
-			channel: opts.channel?.toString()
+			channel: Array.isArray(opts.channel) ? opts.channel.map(n => n.toString()) : opts.channel?.toString()
 		});
 		if(!result) {
 			throw new Error('Result message is empty');
