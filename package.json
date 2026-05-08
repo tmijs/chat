@@ -39,11 +39,11 @@
     "tsc-w": "tsc -w"
   },
   "devDependencies": {
-    "@types/node": "^22.19.17",
+    "@types/node": "^22.19.18",
     "esbuild": "^0.28.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@tmi.js/irc-parser": "^0.5.0"
+    "@tmi.js/irc-parser": "^0.6.0"
   }
 }
