@@ -31,7 +31,13 @@ export default class Identity {
 	[Symbol.for('nodejs.util.inspect.custom')]() {
 		const name = this.name ? `"${this.name}"` : 'undefined';
 		const id = this.id ? `"${this.id}"` : this.id === '' ? '""' : 'undefined';
-		const token = this.token ? typeof this.token === 'string' ? this.token === '' ? '""' : '[hidden]' : '[hidden function]' : 'undefined';
+		let token = 'undefined';
+		if(typeof this.token === 'string') {
+			token = this.token === '' ? '""' : '[hidden]';
+		}
+		else if(this.token) {
+			token = '[hidden function]';
+		}
 		return `Identity { name: ${name}, id: ${id}, token: ${token} }`;
 	}
 }
