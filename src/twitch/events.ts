@@ -6,7 +6,7 @@ import type {
 	CLEARMSG
 } from '../irc';
 import Channel from '../lib/Channel';
-import type { Emote, MessageFlag } from '../types';
+import type { Emote, GIF, MessageFlag } from '../types';
 
 interface User {
 	id: string;
@@ -106,6 +106,7 @@ export namespace Message {
 			text: string;
 			flags: MessageFlag[];
 			emotes: Emote[];
+			gifs: GIF[];
 			isAction: boolean;
 			isFirst: boolean;
 		};

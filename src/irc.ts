@@ -1,6 +1,6 @@
 import type { ChannelString, IrcMessage } from '@tmi.js/irc-parser';
 import { Collection } from './lib/Collection';
-import { Emote, Indices, MessageFlag } from './types';
+import { Emote, GIF, Indices, MessageFlag } from './types';
 
 export interface PrefixHostOnly {
 	nick: undefined;
@@ -64,6 +64,7 @@ export namespace PRIVMSG {
 		color: TagType.color;
 		displayName: TagType.displayName;
 		emotes: TagType.emotes;
+		gifs?: TagType.gifs;
 		firstMsg: TagType.firstMsg;
 		flags: TagType.flags;
 		id: TagType.id;
@@ -565,6 +566,9 @@ export namespace TagType {
 	// Emotes
 	export type emotes = Emote[];
 
+	// GIFs
+	export type gifs = GIF[];
+
 	// Comma-separated lists
 	export type emoteSets = string[];
 
@@ -733,6 +737,19 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 					return [ Number(start), Number(end) + 1 ];
 				});
 				return { id, indices };
+			}) ];
+		}
+
+		// GIFs
+		case 'gifs': {
+			if(!value) {
+				return [ key, [] ];
+			}
+			return [ key, value.split(',').map<GIF>(n => {
+				const [ pos, id, url ] = n.split('|');
+				const [ start, end ] = pos.split('-');
+				const indices: Indices[] = [ [ Number(start), Number(end) + 1 ] ];
+				return { id, url, indices };
 			}) ];
 		}
 

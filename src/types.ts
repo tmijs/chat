@@ -5,6 +5,12 @@ export interface Emote {
 	indices: Indices[];
 }
 
+export interface GIF {
+	id: string;
+	indices: Indices[];
+	url: string;
+}
+
 export interface MessageFlag {
 	index: Indices;
 	/**

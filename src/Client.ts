@@ -477,6 +477,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 				text,
 				flags: tags.flags,
 				emotes: tags.emotes,
+				gifs: tags.gifs ?? [],
 				isAction,
 				isFirst: tags.firstMsg
 			},
@@ -576,6 +577,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
+						gifs: [],
 						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
@@ -816,6 +818,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
+						gifs: [],
 						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
@@ -834,6 +837,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						text,
 						flags: tags.flags,
 						emotes: tags.emotes,
+						gifs: [],
 						isAction,
 						isFirst: 'firstMsg' in tags && tags.firstMsg === true
 					},
