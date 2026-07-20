@@ -1,11 +1,13 @@
 export type Indices = [ start: number, end: number ];
 
 export interface Emote {
+	type: 'emote';
 	id: string;
 	indices: Indices[];
 }
 
 export interface GIF {
+	type: 'gif';
 	id: string;
 	indices: Indices[];
 	url: string;

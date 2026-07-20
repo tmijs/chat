@@ -730,13 +730,13 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 			if(!value) {
 				return [ key, [] ];
 			}
-			return [ key, value.split('/').map<Emote>(emote => {
-				const [ id, raw ] = emote.split(':');
+			return [ key, value.split('/').map<Emote>(n => {
+				const [ id, raw ] = n.split(':');
 				const indices = raw.split(',').map<Indices>(pos => {
 					const [ start, end ] = pos.split('-');
 					return [ Number(start), Number(end) + 1 ];
 				});
-				return { id, indices };
+				return { type: 'emote', id, indices };
 			}) ];
 		}
 
@@ -749,7 +749,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 				const [ pos, id, url ] = n.split('|');
 				const [ start, end ] = pos.split('-');
 				const indices: Indices[] = [ [ Number(start), Number(end) + 1 ] ];
-				return { id, url, indices };
+				return { type: 'gif', id, url, indices };
 			}) ];
 		}
 
