@@ -561,11 +561,19 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			};
 		}
 		const PRIME = 'Prime';
-		const getTier = (plan: irc.TagType.msgParamSubPlan) => {
+		const getTier = (plan: irc.USERNOTICE.SubPlanTierString) => {
 			if(typeof plan !== 'string' || plan === PRIME) {
 				return 1;
 			}
 			return parseInt(plan.slice(0, 1)) as Subscription.SubTierNumber;
+		};
+		const getSubPlan = <T extends { msgParamSubPlanName?: string; msgParamSubPlan: irc.USERNOTICE.SubPlanTierString; }>(tags: T) => {
+			return {
+				name: tags.msgParamSubPlanName as T['msgParamSubPlanName'],
+				plan: tags.msgParamSubPlan,
+				tier: getTier(tags.msgParamSubPlan),
+				isPrime: tags.msgParamSubPlan === PRIME
+			};
 		};
 		switch(tags.msgId) {
 			case 'announcement': {
@@ -598,12 +606,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					type: 'sub',
 					channel,
 					user,
-					plan: {
-						name: tags.msgParamSubPlanName,
-						plan: tags.msgParamSubPlan,
-						tier: getTier(tags.msgParamSubPlan),
-						isPrime: tags.msgParamSubPlan === PRIME
-					},
+					plan: getSubPlan(tags),
 					multiMonth: {
 						duration: tags.msgParamMultimonthDuration ?? 0
 					},
@@ -650,12 +653,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						tenure: tags.msgParamMultimonthTenure ?? 0
 					},
 					streak,
-					plan: {
-						name: tags.msgParamSubPlanName,
-						plan: tags.msgParamSubPlan,
-						tier: getTier(tags.msgParamSubPlan),
-						isPrime: tags.msgParamSubPlan === PRIME
-					},
+					plan: getSubPlan(tags),
 					gift,
 					tags
 				});
@@ -679,12 +677,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						display: tags.msgParamRecipientDisplayName
 					},
 					cumulativeMonths: tags.msgParamMonths,
-					plan: {
-						name: tags.msgParamSubPlanName,
-						plan: tags.msgParamSubPlan,
-						tier: getTier(tags.msgParamSubPlan),
-						isPrime: tags.msgParamSubPlan === PRIME
-					},
+					plan: getSubPlan(tags),
 					gift: {
 						months: tags.msgParamGiftMonths as Subscription.GiftMonths,
 						theme: tags.msgParamGiftTheme,
@@ -710,12 +703,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 					type: 'subMysteryGift',
 					channel,
 					user,
-					plan: {
-						name: undefined,
-						plan: tags.msgParamSubPlan,
-						tier: getTier(tags.msgParamSubPlan),
-						isPrime: false
-					},
+					plan: { ...getSubPlan(tags), name: undefined },
 					mystery: {
 						id: tags.msgParamCommunityGiftId,
 						count: tags.msgParamMassGiftCount,
