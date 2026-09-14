@@ -412,17 +412,10 @@ export namespace Unraid {
 }
 
 export namespace ViewerMilestone {
-	interface BaseEvent {
+	interface BaseEvent<Type, Tags> {
+		type: Type;
 		channel: Channel;
 		user: UserExtra;
-	}
-	export interface Event extends BaseEvent {
-		type: 'watch-streak';
-		milestone: {
-			id: TagType.msgParamId;
-			value: TagType.msgParamValue;
-			reward: TagType.msgParamCopoReward;
-		};
 		message: {
 			id: TagType.id;
 			text: string;
@@ -430,8 +423,23 @@ export namespace ViewerMilestone {
 			emotes: Emote[];
 			isAction: boolean;
 		};
-		tags: USERNOTICE.TagsViewerMilestone;
+		tags: Tags;
 	}
+	export interface EventWatchStreak extends BaseEvent<'watch-streak', USERNOTICE.TagsViewerMilestone> {
+		milestone: {
+			id: TagType.msgParamId;
+			value: TagType.msgParamValue;
+			reward: TagType.msgParamCopoReward;
+		};
+	}
+	export interface EventModiversary extends BaseEvent<'modiversary', USERNOTICE.TagsModiversary> {
+		milestone: {
+			id: '';
+			value: TagType.msgParamMonths;
+			reward: 0;
+		};
+	}
+	export type Event = EventWatchStreak | EventModiversary;
 }
 
 export namespace SharedChatNotice {

@@ -400,6 +400,12 @@ export namespace USERNOTICE {
 		msgParamId: TagType.msgParamId;
 		msgParamValue: TagType.msgParamValue;
 	}
+	/**
+	 * @example `has been a moderator for ${number} months!`
+	 */
+	export interface TagsModiversary extends BaseTags<'modiversary'> {
+		msgParamMonths: TagType.msgParamMonths;
+	}
 	export interface TagsSharedChatNotice extends BaseTags<'sharedchatnotice'> {
 		sourceBadgeInfo: BadgeInfo;
 		sourceBadges: Badges;
@@ -423,6 +429,7 @@ export namespace USERNOTICE {
 		| TagsBitsBadgeTier
 		| TagsSocialSharingBadge
 		| TagsViewerMilestone
+		| TagsModiversary
 		| TagsSharedChatNotice;
 	export type IrcMessage = IM<Command, Tags, PrefixHostOnly, ChannelString, [ message: string ]>;
 }

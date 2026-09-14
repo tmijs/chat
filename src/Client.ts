@@ -796,9 +796,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			}
 			case 'bitsbadgetier': {
 				this.emit('badgeUpgrade', {
+					type: 'bits',
 					channel,
 					user,
-					type: 'bits',
 					threshold: tags.msgParamThreshold,
 					tags,
 					message: {
@@ -815,9 +815,9 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			}
 			case 'socialsharingbadge': {
 				this.emit('badgeUpgrade', {
+					type: 'socialSharing',
 					channel,
 					user,
-					type: 'socialSharing',
 					threshold: tags.msgParamCurrentBadgeLevel,
 					tags,
 					message: {
@@ -834,17 +834,38 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			}
 			case 'viewermilestone': {
 				// Allow future categories to populate the type
-				const isValidMilestoneType = (category: string): category is ViewerMilestone.Event['type'] => {
-					return category !== '';
+				const isValidMilestoneType = (category: string): category is Exclude<ViewerMilestone.Event['type'], 'modiversary'> => {
+					return category !== '' && category !== 'modiversary';
 				}
 				this.emit('viewerMilestone', {
+					type: isValidMilestoneType(tags.msgParamCategory) ? tags.msgParamCategory : 'watch-streak',
 					channel,
 					user,
-					type: isValidMilestoneType(tags.msgParamCategory) ? tags.msgParamCategory : 'watch-streak',
 					milestone: {
 						id: tags.msgParamId,
 						value: tags.msgParamValue,
 						reward: tags.msgParamCopoReward
+					},
+					message: {
+						id: tags.id,
+						text,
+						flags: tags.flags,
+						emotes: tags.emotes,
+						isAction,
+					},
+					tags,
+				});
+				break;
+			}
+			case 'modiversary': {
+				this.emit('viewerMilestone', {
+					type: 'modiversary',
+					channel,
+					user,
+					milestone: {
+						id: '',
+						value: tags.msgParamMonths,
+						reward: 0
 					},
 					message: {
 						id: tags.id,
