@@ -565,7 +565,7 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 			if(typeof plan !== 'string' || plan === PRIME) {
 				return 1;
 			}
-			return parseInt(plan.slice(0, 1)) as Subscription.SubTierNumber;
+			return parseInt(plan[0], 10) as Subscription.SubTierNumber;
 		};
 		const getSubPlan = <T extends { msgParamSubPlanName?: string; msgParamSubPlan: irc.USERNOTICE.SubPlanTierString; }>(tags: T) => {
 			return {
