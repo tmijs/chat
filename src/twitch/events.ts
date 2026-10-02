@@ -365,6 +365,19 @@ export namespace Subscription {
 		| EventPrimePaidUpgrade;
 }
 
+export namespace Drops {
+	export interface EventBase<Type> {
+		type: Type;
+		channel: Channel;
+		user: UserExtra;
+	}
+	export interface EventGiftedDropsSummary extends EventBase<'giftedDropsSummary'> {
+		recipientCount: TagType.msgParamRecipientCount;
+		tags: USERNOTICE.TabsGiftedDropsSummary;
+	}
+	export type Event = EventGiftedDropsSummary;
+}
+
 export namespace Moderation {
 	export interface EventBase<Type, Tags> {
 		type: Type;

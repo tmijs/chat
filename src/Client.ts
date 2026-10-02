@@ -6,7 +6,7 @@ import Channel, { ChannelPlaceholder } from './lib/Channel';
 import * as util from './lib/util';
 import * as irc from './irc';
 import type {
-	GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
+	Drops, GlobalUserState, Message, Moderation, RoomState, Raid, Subscription,
 	SharedChatNotice, Unraid, UserState, ViewerMilestone, Whisper,
 } from './twitch/events';
 import type { Emote } from './types';
@@ -83,6 +83,7 @@ export type ChatEvents = {
 	unraid: Unraid.Event;
 	sub: Subscription.Event;
 	badgeUpgrade: Message.EventBadgeUpgrade;
+	drops: Drops.Event;
 	viewerMilestone: ViewerMilestone.Event;
 	sharedChatNotice: SharedChatNotice.Event;
 	join: { channel: Channel; };
@@ -771,6 +772,16 @@ export class Client extends EventEmitter<ToTuples<ClientEvents>> {
 						tier: getTier(tags.msgParamSubPlan),
 						isPrime: false
 					},
+					tags
+				});
+				break;
+			}
+			case 'gifteddropssummary': {
+				this.emit('drops', {
+					type: 'giftedDropsSummary',
+					channel,
+					user,
+					recipientCount: tags.msgParamRecipientCount,
 					tags
 				});
 				break;

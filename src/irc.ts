@@ -349,6 +349,12 @@ export namespace USERNOTICE {
 		msgParamSubPlan: SubPlanTierString;
 	}
 	/**
+	 * @example `${string}'s gift gave drops progress to ${number} users!`
+	 */
+	export interface TabsGiftedDropsSummary extends BaseTags<'gifteddropssummary'> {
+		msgParamRecipientCount: TagType.msgParamRecipientCount;
+	}
+	/**
 	 * @example `${string} is paying forward the Gift they got from ${string} to ${string}!`
 	 */
 	export interface TagsStandardPayForward extends BaseTags<'standardpayforward'>, BaseTags_PayForward {
@@ -422,6 +428,7 @@ export namespace USERNOTICE {
 		| TagsResub
 		| TagsSubGift
 		| TagsSubMysteryGift
+		| TabsGiftedDropsSummary
 		| TagsStandardPayForward
 		| TagsCommunityPayForward
 		| TagsGiftPaidUpgrade
@@ -532,6 +539,7 @@ export namespace TagType {
 	export type msgParamMonths = number;
 	export type msgParamMultimonthDuration = number;
 	export type msgParamMultimonthTenure = number;
+	export type msgParamRecipientCount = number;
 	export type msgParamSenderCount = number;
 	export type msgParamStreakMonths = number;
 	export type msgParamThreshold = number;
@@ -671,6 +679,7 @@ export function parseTag(key: string, value: string, params: IrcMessage['params'
 		case 'msgParamMonths':
 		case 'msgParamMultimonthDuration':
 		case 'msgParamMultimonthTenure':
+		case 'msgParamRecipientCount':
 		case 'msgParamSenderCount':
 		case 'msgParamStreakMonths':
 		case 'msgParamThreshold':
